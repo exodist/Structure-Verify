@@ -18,7 +18,7 @@ sub add {
 }
 
 sub term_table {
-    my $self = shift;
+    my $self   = shift;
     my %colors = @_;
 
     my @rows = map {

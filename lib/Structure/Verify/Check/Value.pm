@@ -9,6 +9,8 @@ use Structure::Verify::Util::Ref qw/render_ref/;
 use parent 'Structure::Verify::Check';
 use Structure::Verify::HashBase qw/-value/;
 
+use Term::Table::Cell;
+
 sub verify {
     my $self = shift;
     my ($got) = @_;
@@ -30,7 +32,7 @@ sub cell {
         border_right => '<',
     ) unless defined $value;
 
-    if(ref($value)) {
+    if (ref($value)) {
         my $refa = render_ref($value);
         my $refb = "" . $value;
 
@@ -38,7 +40,7 @@ sub cell {
         $val_string .= "\n$refb" if $refa ne $refb;
 
         return Term::Table::Cell->new(
-            value => $val_string,
+            value        => $val_string,
             border_left  => '>',
             border_right => '<',
         );

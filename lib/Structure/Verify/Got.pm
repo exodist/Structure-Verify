@@ -25,7 +25,7 @@ sub from_return {
         $self->{+DEFINED} = defined $self->{+VALUE} ? 1 : 0;
     }
     else {
-        croak "Too many arguments provided to the constructor"
+        croak "Too many arguments provided to the constructor";
     }
 
     return $self;
@@ -130,7 +130,7 @@ sub lines {
 }
 
 sub cell {
-    my $self = shift;
+    my $self   = shift;
     my %params = @_;
 
     return Term::Table::Cell->new(
@@ -153,7 +153,7 @@ sub cell {
 
     my $value = $self->value;
 
-    if(ref($value)) {
+    if (ref($value)) {
         my $refa = render_ref($value);
         my $refb = "$value";
 
@@ -161,7 +161,7 @@ sub cell {
         $val_string .= "\n$refb" if $refa ne $refb;
 
         return Term::Table::Cell->new(
-            value => $val_string,
+            value        => $val_string,
             border_left  => '>',
             border_right => '<',
         );

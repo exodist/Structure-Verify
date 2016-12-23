@@ -8,11 +8,12 @@ use Structure::Verify::HashBase qw/-type -subcheck/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 use Scalar::Util qw/blessed/;
+use Carp qw/croak/;
 
 use Structure::Verify::Got;
+use Term::Table::Cell;
 
-sub operator          { 'IS' }
-sub negative_operator { 'IS NOT' }
+sub operator { 'IS' }
 
 sub cell {
     return Term::Table::Cell->new(
@@ -50,7 +51,7 @@ sub subchecks {
 
     my $check = $self->{+SUBCHECK} or return;
 
-    my $type = $self->{+TYPE};
+    my $type  = $self->{+TYPE};
     my $value = $got->value;
 
     return (

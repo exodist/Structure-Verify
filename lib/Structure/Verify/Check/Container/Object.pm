@@ -10,9 +10,9 @@ use Structure::Verify::Util::Ref qw/rtype/;
 use Scalar::Util qw/blessed/;
 
 use Structure::Verify::Got;
+use Term::Table::Cell;
 
-sub operator          { 'IS' }
-sub negative_operator { 'IS NOT' }
+sub operator { 'IS' }
 
 sub cell {
     return Term::Table::Cell->new(
@@ -51,7 +51,7 @@ sub subchecks {
 
         my ($name, $run, $wrap);
         if (ref $do) {
-            $run = $do;
+            $run  = $do;
             $name = '...';
             $wrap = '';
         }

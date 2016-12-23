@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Carp qw/croak/;
+use Structure::Verify::Util::Ref qw/rtype/;
 
 use Structure::Verify::Delta;
 use Structure::Verify::Meta;
@@ -12,8 +13,14 @@ our $VERSION = '0.001';
 
 use Importer Importer => 'import';
 our @EXPORT_OK = qw{
-    build current_build run_checks load_check load_checks load_check_as
-    load_checks_as
+    build current_build
+
+    run_checks
+
+    check checks end etc
+
+    load_check    load_checks
+    load_check_as load_checks_as
 };
 
 sub current_build {
@@ -25,7 +32,7 @@ sub build {
     my ($make, $with) = @_;
     my $meta = Structure::Verify::Meta->new(scalar caller);
 
-    my $class = $make =~ m/^+(.*)$/ ? $1 : $meta->build_map->{$make};
+    my $class = $make =~ m/^\+(.*)$/ ? $1 : $meta->build_map->{$make};
 
     croak "Not sure how to build a '$make'"
         unless $class;
@@ -45,6 +52,58 @@ sub build {
     die $err unless $ok;
 
     return $check;
+}
+
+sub check {
+    my $check = pop;
+    my $id = shift;
+
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    my $build = $meta->current_build or croak "No current build";
+
+    return $build->add_check($id => $check)
+        if defined $id;
+
+    return $build->add_check($check);
+}
+
+my %CHECKS_REFS = (HASH => 1, ARRAY => 1);
+sub checks {
+    my $ref = shift;
+    my $type = rtype($ref);
+
+    croak "'checks' takes either a hashref or an arrayref"
+        unless $CHECKS_REFS{$type};
+
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    my $build = $meta->current_build or croak "No current build";
+
+    if ($type eq 'HASH') {
+        $build->add_check($_ => $ref->{$_}) for keys %$ref;
+    }
+    elsif ($type eq 'ARRAY') {
+        $build->add_check(@_) for @$ref;
+    }
+}
+
+sub end {
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    my $build = $meta->current_build or croak "No current build";
+
+    croak "Current build '$build' cannot be bounded"
+        unless $build->can('set_bounded');
+
+    $build->set_bounded(1);
+}
+
+sub etc {
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    my $build = $meta->current_build or croak "No current build";
+
+    croak "Current build '$build' cannot be unbounded"
+        unless $build->can('set_bounded');
+
+    $build->set_bounded(0);
 }
 
 {

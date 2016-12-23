@@ -5,6 +5,7 @@ use warnings;
 use Carp qw/croak/;
 use parent 'Structure::Verify::Check';
 use Structure::Verify::HashBase;
+use Term::Table::Cell;
 
 sub operator { '' }
 

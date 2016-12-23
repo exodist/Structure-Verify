@@ -4,14 +4,15 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Container';
 
-use Structure::Verify::HashBase qw/-components -bounded/;
+use Structure::Verify::HashBase qw/-components bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 
 use Structure::Verify::Got;
 use Structure::Verify::Check::Boundary;
+use Term::Table::Cell;
 
-sub operator          { 'IS' }
+sub operator { 'IS' }
 
 sub cell {
     return Term::Table::Cell->new(

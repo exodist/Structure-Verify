@@ -7,7 +7,9 @@ use Scalar::Util qw/blessed/;
 
 use Structure::Verify::HashBase qw/-_lines -file/;
 
-sub BUILD_ALIAS {}
+use Term::Table::Cell;
+
+sub BUILD_ALIAS { }
 
 sub init {
     my $self = shift;
@@ -17,7 +19,7 @@ sub init {
 sub operator { croak blessed($_[0]) . " does not implement operator()" }
 
 sub clone {
-    my $self = shift;
+    my $self  = shift;
     my $class = blessed($self);
     return bless({%$self}, $class);
 }

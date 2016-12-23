@@ -4,12 +4,13 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Container';
 
-use Structure::Verify::HashBase qw/-components -idx -bounded/;
+use Structure::Verify::HashBase qw/-components -idx bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 
 use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
+use Term::Table::Cell;
 
 sub operator { 'IS' }
 

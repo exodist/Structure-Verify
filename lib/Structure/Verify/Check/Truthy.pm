@@ -8,6 +8,7 @@ use Structure::Verify::HashBase qw/-true -false -defined -undefined -exists -non
 use Carp qw/croak/;
 
 use Structure::Verify::Got;
+use Term::Table::Cell;
 
 my @ORDER = ( +TRUE, +FALSE, +DEFINED, +UNDEFINED, +EXISTS, +NON_EXISTANT );
 
@@ -46,11 +47,11 @@ sub verify {
     my ($got) = @_;
 
     unless ($got->exists) {
-        return 1 if $self->{+NOT_EXISTING};
+        return 1 if $self->{+NON_EXISTANT};
         return 0;
     }
 
-    return 1 if $self->{+EXISTING};
+    return 1 if $self->{+EXISTS};
 
     unless ($got->defined) {
         return 1 if $self->{+UNDEFINED};

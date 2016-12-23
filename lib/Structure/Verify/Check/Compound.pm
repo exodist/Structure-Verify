@@ -9,6 +9,7 @@ use Carp qw/croak/;
 use Structure::Verify qw/run_checks/;
 
 use Structure::Verify::Got;
+use Term::Table::CellStack;
 
 my %TYPES = (
     all  => 1,
@@ -40,7 +41,7 @@ sub cell {
 }
 
 sub complex_check {
-    my $self = shift;
+    my $self   = shift;
     my %params = @_;
 
     my $type  = $self->{+TYPE};

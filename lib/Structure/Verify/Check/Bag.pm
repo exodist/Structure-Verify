@@ -4,13 +4,14 @@ use warnings;
 
 use parent 'Structure::Verify::Check';
 
-use Structure::Verify::HashBase qw/-components -bounded/;
+use Structure::Verify::HashBase qw/-components bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 use Structure::Verify qw/run_checks/;
 
 use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
+use Term::Table::Cell;
 
 sub operator { 'IS' }
 
@@ -47,7 +48,7 @@ sub add_subcheck {
 }
 
 sub complex_check {
-    my $self = shift;
+    my $self   = shift;
     my %params = @_;
 
     my $g       = $params{got};
@@ -58,7 +59,7 @@ sub complex_check {
     my $components = $self->{+COMPONENTS};
     my $value      = $g->value;
 
-    my $bad = 0;
+    my $bad  = 0;
     my $c_ok = {};
     my $v_ok = {};
 
