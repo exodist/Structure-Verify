@@ -29,11 +29,6 @@ sub operator {
     return uc($self->{TYPE});
 }
 
-sub negative_operator {
-    my $self = shift;
-    return 'NOT ' . $self->operator;
-}
-
 sub verify { 1 }
 
 sub cell {

@@ -12,7 +12,6 @@ use Structure::Verify::Got;
 my @ORDER = ( +TRUE, +FALSE, +DEFINED, +UNDEFINED, +EXISTS, +NON_EXISTANT );
 
 sub operator { 'IN' }
-sub negative_operator { 'NOT IN' }
 
 sub from_string {
     my $class = shift;

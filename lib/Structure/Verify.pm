@@ -5,37 +5,62 @@ use warnings;
 use Carp qw/croak/;
 
 use Structure::Verify::Delta;
+use Structure::Verify::Meta;
 use Structure::Verify::Got;
 
 our $VERSION = '0.001';
 
 use Importer Importer => 'import';
-our @EXPORT_OK = qw/build current_build run_checks/;
+our @EXPORT_OK = qw{
+    build current_build run_checks load_check load_checks load_check_as
+    load_checks_as
+};
 
-my @BUILDS;
-
-sub current_build { @BUILDS ? $BUILDS[-1] : undef }
+sub current_build {
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    $meta->current_build;
+}
 
 sub build {
-    my %args = @_;
+    my ($make, $with) = @_;
+    my $meta = Structure::Verify::Meta->new(scalar caller);
 
-    my $builder = $args{builder};
-    my $check   = $args{check};
-    my $meta    = $args{meta};
-    my $args    = $args{args};
+    my $class = $make =~ m/^+(.*)$/ ? $1 : $meta->build_map->{$make};
 
-    push @BUILDS => $check;
+    croak "Not sure how to build a '$make'"
+        unless $class;
+
+    my $check  = $class->new;
+    my $builds = $meta->builds;
+
+    push @$builds => $check;
     my ($ok, $err);
     {
         local ($@, $?, $!);
-        $ok = eval { $builder->($check, $meta, $args); 1 };
+        $ok = eval { $check->build($with); 1 };
         $err = $@;
     }
-    pop @BUILDS;
+    pop @$builds;
 
     die $err unless $ok;
 
     return $check;
+}
+
+{
+    no warnings 'once';
+    *load_check    = \&load_checks;
+    *load_check_as = \&load_checks_as;
+}
+
+sub load_checks {
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    $meta->load(@_);
+}
+
+sub load_checks_as {
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    $meta->load_as(@_);
 }
 
 sub run_checks {

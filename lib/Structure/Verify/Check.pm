@@ -7,13 +7,20 @@ use Scalar::Util qw/blessed/;
 
 use Structure::Verify::HashBase qw/-_lines -file/;
 
+sub BUILD_ALIAS {}
+
 sub init {
     my $self = shift;
     $self->{+_LINES} ||= delete $self->{lines};
 }
 
 sub operator { croak blessed($_[0]) . " does not implement operator()" }
-sub negative_operator { '!' . shift->operator }
+
+sub clone {
+    my $self = shift;
+    my $class = blessed($self);
+    return bless({%$self}, $class);
+}
 
 sub verify { croak blessed($_[0]) . " does not implement verify()" }
 

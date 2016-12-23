@@ -12,7 +12,6 @@ use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
 
 sub operator { 'IS' }
-sub negative_operator { 'IS NOT' }
 
 sub cell {
     return Term::Table::Cell->new(

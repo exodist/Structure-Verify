@@ -13,7 +13,6 @@ use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
 
 sub operator { 'IS' }
-sub negative_operator { 'IS NOT' }
 
 sub init {
     my $self = shift;

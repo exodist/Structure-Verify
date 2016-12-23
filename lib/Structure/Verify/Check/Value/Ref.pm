@@ -4,12 +4,12 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Value';
 use Structure::Verify::HashBase;
+use Structure::Verify::Behavior::Negatable;
 
 use Scalar::Util qw/refaddr/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
-sub operator { 'IS' }
-sub negative_operator { 'IS NOT' }
+sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
 
 sub init {
     my $self = shift;

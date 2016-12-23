@@ -4,11 +4,11 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Value';
 use Structure::Verify::HashBase;
+use Structure::Verify::Behavior::Negatable;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 
-sub operator { '=~' }
-sub negative_operator { '!~' }
+sub operator { $_[0]->negate ? '!~' : '=~' }
 
 sub init {
     my $self = shift;
@@ -24,7 +24,9 @@ sub verify {
     return 0 unless $self->SUPER::verify(@_);
     return 0 unless $got->exists;
     return 0 unless $got->defined;
-    return $got->value =~ $self->value ? 1 : 0;
+
+    my ($pass, $fail) = $self->negate ? (0, 1) : (1, 0);
+    return $got->value =~ $self->value ? $pass : $fail;
 }
 
 1;

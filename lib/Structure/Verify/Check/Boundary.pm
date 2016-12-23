@@ -7,7 +7,6 @@ use parent 'Structure::Verify::Check';
 use Structure::Verify::HashBase;
 
 sub operator { '' }
-sub negative_operator { '' }
 
 sub cell {
     my $self = shift;
