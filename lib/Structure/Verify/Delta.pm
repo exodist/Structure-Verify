@@ -78,7 +78,7 @@ sub term_table {
 
         %$table_args,
 
-        header      => [qw/PATH G-LINES GOT OP CHECK * C-LINES/],
+        header      => [qw/PATH LINES GOT OP CHECK * LINES/],
         no_collapse => [qw/GOT CHECK/],
         rows        => \@rows,
     );
