@@ -5,6 +5,7 @@ use warnings;
 use Carp qw/croak/;
 use Structure::Verify::Util::Ref qw/rtype/;
 use Sub::Info qw/sub_info/;
+use Scalar::Util qw/blessed/;
 
 use Structure::Verify::Delta;
 use Structure::Verify::Meta;
@@ -82,6 +83,9 @@ sub check($;$) {
     my $meta = Structure::Verify::Meta->new(scalar caller);
     my $build = $meta->current_build or croak "No current build";
 
+    croak "Check '" . blessed($build) . "' does not support subchecks"
+        unless $build->can('add_subcheck');
+
     return $build->add_subcheck($id => $check)
         if defined $id;
 
@@ -99,11 +103,14 @@ sub checks($) {
     my $meta = Structure::Verify::Meta->new(scalar caller);
     my $build = $meta->current_build or croak "No current build";
 
+    croak "Check '" . blessed($build) . "' does not support subchecks"
+        unless $build->can('add_subcheck');
+
     if ($type eq 'HASH') {
         $build->add_subcheck($_ => $ref->{$_}) for keys %$ref;
     }
     elsif ($type eq 'ARRAY') {
-        $build->add_subcheck(@_) for @$ref;
+        $build->add_subcheck($_) for @$ref;
     }
 }
 
@@ -111,7 +118,7 @@ sub end() {
     my $meta = Structure::Verify::Meta->new(scalar caller);
     my $build = $meta->current_build or croak "No current build";
 
-    croak "Current build '$build' cannot be bounded"
+    croak "Current build '" . blessed($build) . "' cannot be bounded"
         unless $build->can('set_bounded');
 
     $build->set_bounded(1);
@@ -121,7 +128,7 @@ sub etc() {
     my $meta = Structure::Verify::Meta->new(scalar caller);
     my $build = $meta->current_build or croak "No current build";
 
-    croak "Current build '$build' cannot be unbounded"
+    croak "Current build '" . blessed($build) . "' cannot be bounded"
         unless $build->can('set_bounded');
 
     $build->set_bounded(0);
@@ -158,7 +165,7 @@ sub run_checks {
 
         $check = $convert->($check) if $convert;
 
-        croak "$path: " . (defined($check) ? "'$check'" : "<undef>") . " is not a valid check"
+        croak(($path ? "$path: " : "") . (defined($check) ? "'$check'" : "<undef>") . " is not a valid check")
             unless $check && $check->isa('Structure::Verify::Check');
 
         unless ($check->verify($got)) {

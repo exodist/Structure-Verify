@@ -41,171 +41,140 @@ is_deeply(
     "Set up our build map"
 );
 
-done_testing;
+ok(!current_build, "no current build");
 
-__END__
+build hash => sub {
+    ok(current_build->isa('Structure::Verify::Check::Container::Hash'), "Got the current build");
+};
 
-sub current_build() {
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    $meta->current_build;
-}
+my $h = build hash => sub {
+    check 'foo' => build string => 'bar';
+    check 'baz' => build string => 'bat';
+};
+is_deeply([$h->lines], [__LINE__ - 4, __LINE__ - 1], "Got line numbers");
+is_deeply($h->file, __FILE__, "got filename");
 
-sub build($$) {
-    my @caller = caller(0);
+like(exception { check 'aaa' }, qr/No current build/, "Cannot use check() without a build");
+like(exception { checks ['aaa'] }, qr/No current build/, "Cannot use checks() without a build");
 
-    _build(\@caller, @_);
-}
-
-sub _build {
-    my ($caller, $make, $with) = @_;
-
-    my $meta = Structure::Verify::Meta->new($caller->[0]);
-
-    my $class = $make =~ m/^\+(.*)$/ ? $1 : $meta->build_map->{$make};
-
-    croak "Not sure how to build a '$make'"
-        unless $class;
-
-    my ($file, $lines);
-    if (rtype($with) eq 'CODE') {
-        my $info = sub_info($with);
-        $file  = $info->{file};
-        $lines = $info->{lines};
-    }
-    else {
-        $file  = $caller->[1];
-        $lines = [ $caller->[2] ];
-    }
-
-    my $check  = $class->new(file => $file, lines => $lines, via_build => 1);
-    my $builds = $meta->builds;
-
-    push @$builds => $check;
-    my ($ok, $err);
-    {
-        local ($@, $?, $!);
-        $ok = eval { $check->build($with, $make); 1 };
-        $err = $@;
-    }
-    pop @$builds;
-
-    die $err unless $ok;
-
-    return $check;
-}
-
-sub check($;$) {
-    my $check = pop;
-    my $id = shift;
-
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    my $build = $meta->current_build or croak "No current build";
-
-    return $build->add_subcheck($id => $check)
-        if defined $id;
-
-    return $build->add_subcheck($check);
-}
-
-my %CHECKS_REFS = (HASH => 1, ARRAY => 1);
-sub checks($) {
-    my $ref = shift;
-    my $type = rtype($ref);
-
-    croak "'checks' takes either a hashref or an arrayref"
-        unless $CHECKS_REFS{$type};
-
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    my $build = $meta->current_build or croak "No current build";
-
-    if ($type eq 'HASH') {
-        $build->add_subcheck($_ => $ref->{$_}) for keys %$ref;
-    }
-    elsif ($type eq 'ARRAY') {
-        $build->add_subcheck(@_) for @$ref;
-    }
-}
-
-sub end() {
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    my $build = $meta->current_build or croak "No current build";
-
-    croak "Current build '$build' cannot be bounded"
-        unless $build->can('set_bounded');
-
-    $build->set_bounded(1);
-}
-
-sub etc() {
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    my $build = $meta->current_build or croak "No current build";
-
-    croak "Current build '$build' cannot be unbounded"
-        unless $build->can('set_bounded');
-
-    $build->set_bounded(0);
-}
+build 'string' => sub {
+    like(
+        exception { check 'aaa' },
+        qr/Check 'Structure::Verify::Check::Value::String' does not support subchecks/,
+        "build must support subchecks to be built with checks"
+    );
+};
 
 {
-    no warnings 'once';
-    *load_check      = \&load_checks;
-    *load_check_as   = \&load_checks_as;
-}
+    package MyCheck;
+    use parent 'Structure::Verify::Check';
 
-sub load_checks {
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    $meta->load(@_);
-}
+    our @ARGS;
 
-sub load_checks_as {
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    $meta->load_as(@_);
-}
+    sub init { }
 
-sub run_checks {
-    my ($in, $want, %params) = @_;
-
-    my $convert = $params{convert};
-    my $in_path = $params{path} || '$_';
-
-    my @todo  = ([$in_path || '', $want, Structure::Verify::Got->from_return($in)]);
-    my $delta = Structure::Verify::Delta->new();
-    my $pass  = 1;
-
-    while (my $step = shift @todo) {
-        my ($path, $check, $got) = @$step;
-
-        $check = $convert->($check) if $convert;
-
-        croak "$path: " . (defined($check) ? "'$check'" : "<undef>") . " is not a valid check"
-            unless $check && $check->isa('Structure::Verify::Check');
-
-        unless ($check->verify($got)) {
-            $pass = 0;
-            $delta->add($path, $check, $got);
-            next;
-        }
-
-        if ($check->can('complex_check')) {
-            my $ok = $check->complex_check(
-                path    => $path,
-                got     => $got,
-                delta   => $delta,
-                convert => $convert,
-            );
-
-            unless ($ok) {
-                $pass = 0;
-                next;
-            }
-        }
-
-        unshift @todo => $check->subchecks($path, $got)
-            if $check->can('subchecks');
+    sub add_subcheck {
+        my $self = shift;
+        @ARGS = @_;
     }
-
-    return (1) if $pass;
-    return (0, $delta);
 }
 
-1;
+$meta->build_map->{'cc'} = 'MyCheck';
+
+build cc => sub {
+    check 'aaa';
+    is_deeply(\@MyCheck::ARGS, ['aaa'], "1 arg, 1 arg");
+    check a => 1;
+    is_deeply(\@MyCheck::ARGS, [a => 1], "2 args, 2 args");
+
+    checks [ 'a', 'b' ];
+    is_deeply(\@MyCheck::ARGS, ['b'], "added the check");
+
+    checks { 'a' => 'b' };
+    is_deeply(\@MyCheck::ARGS, ['a', 'b'], "added the check with ids");
+
+    like(
+        exception { end },
+        qr/Current build 'MyCheck' cannot be bounded/,
+        "Cannot use end here"
+    );
+
+    like(
+        exception { etc },
+        qr/Current build 'MyCheck' cannot be bounded/,
+        "Cannot use etc here"
+    );
+};
+
+like(
+    exception { checks 'xxx' },
+    qr/'checks' takes either a hashref or an arrayref/,
+    "must be a ref"
+);
+
+like(
+    exception { checks sub { 1 } },
+    qr/'checks' takes either a hashref or an arrayref/,
+    "must be a has or array ref"
+);
+
+like(
+    exception { checks [1] },
+    qr/No current build/,
+    "checks() needs a build"
+);
+
+like(
+    exception { end },
+    qr/No current build/,
+    "Cannot use end here"
+);
+
+like(
+    exception { etc },
+    qr/No current build/,
+    "Cannot use etc here"
+);
+
+my $h0 = build hash => sub { };
+my $h1 = build hash => sub { end };
+my $h2 = build hash => sub { etc };
+
+is($h0->bounded, undef, "not set");
+is($h1->bounded, 1, "bounded");
+is($h2->bounded, 0, "unbounded");
+
+my $hx = build hash => sub {
+    check 'foo' => build string => 'bar';
+    check 'baz' => build string => 'bat';
+    end;
+};
+
+my ($bool, $delta) = run_checks({foo => 'bar', baz => 'bat'}, $hx);
+ok($bool, "pass");
+ok(!$delta, "no delta");
+
+($bool, $delta) = run_checks({foo => 'bar1', baz => 'bat1'}, $hx);
+ok(!$bool, "fail");
+ok($delta, "got delta");
+
+is(@{$delta->rows}, 2, "2 rows in delta");
+is($delta->rows->[0]->[0], '{foo}', "first row is foo");
+is($delta->rows->[1]->[0], '{baz}', "second row is baz");
+
+like(
+    exception { run_checks({}, 'xxx') },
+    qr/'xxx' is not a valid check/,
+    "Must have a valid check"
+);
+
+like(
+    exception { run_checks({a => {}}, build hash => {a => 'xxx'}) },
+    qr/{a}: 'xxx' is not a valid check/,
+    "Must have a valid check (nested)"
+);
+
+my ($ok) = run_checks('xxx', 'xxx', convert => sub { build string => $_[0] } );
+ok($ok, "Success via convert");
+
+done_testing;
