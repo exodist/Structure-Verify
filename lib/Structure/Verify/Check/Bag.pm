@@ -89,7 +89,7 @@ sub complex_check {
 
         for (my $v; $v < @$value; $v++) {
             my $val = Structure::Verify::Got->from_return($value->[$v]);
-            my ($ok) = run_checks($val, $check, convert => $convert, path => "$path->[$c]");
+            my ($ok) = run_checks($val, $check, convert => $convert, path => "$path\[$c]");
             $c_ok->{$c} = 1 if $ok;
             $v_ok->{$v} = 1 if $ok;
 
@@ -100,7 +100,7 @@ sub complex_check {
 
         $bad++;
         $delta->add(
-            "$path\->[<$c>]",
+            "$path\[<$c>]",
             $check,
             Structure::Verify::Got->from_return()
         );
@@ -113,7 +113,7 @@ sub complex_check {
 
         $bad++;
         $delta->add(
-            "$path\->[$v]",
+            "$path\[$v]",
             Structure::Verify::Check::Boundary->new(lines => [$self->lines]),
             Structure::Verify::Got->from_array_idx($value, $v)
         );

@@ -147,7 +147,7 @@ sub run_checks {
     my ($in, $want, %params) = @_;
 
     my $convert = $params{convert};
-    my $in_path = $params{path} || '$_';
+    my $in_path = $params{path} || '';
 
     my @todo  = ([$in_path || '', $want, Structure::Verify::Got->from_return($in)]);
     my $delta = Structure::Verify::Delta->new();

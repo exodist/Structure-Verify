@@ -77,7 +77,7 @@ sub subchecks {
 
         my $got = Structure::Verify::Got->from_array_idx($value, $idx);
 
-        push @subchecks => ["$path\->[$idx]", $check, $got];
+        push @subchecks => ["$path\[$idx]", $check, $got];
     }
 
     if ($self->{+BOUNDED}) {
@@ -85,7 +85,7 @@ sub subchecks {
         my $got = Structure::Verify::Got->from_array_idx($value, $idx);
 
         push @subchecks => [
-            "$path\->[$idx]",
+            "$path\[$idx]",
             Structure::Verify::Check::Boundary->new(lines => [$self->lines]),
             $got,
         ];

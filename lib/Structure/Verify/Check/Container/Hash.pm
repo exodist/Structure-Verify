@@ -70,7 +70,7 @@ sub subchecks {
 
         my $got = Structure::Verify::Got->from_hash_key($value, $key);
 
-        push @subchecks => ["$path\->{$key}", $check, $got];
+        push @subchecks => ["$path\{$key}", $check, $got];
     }
 
     if ($self->{+BOUNDED}) {
@@ -80,7 +80,7 @@ sub subchecks {
             my $got = Structure::Verify::Got->from_hash_key($value, $key);
 
             push @subchecks => [
-                "$path\->{$key}",
+                "$path\{$key}",
                 Structure::Verify::Check::Boundary->new(lines => [$self->lines]),
                 $got,
             ];
