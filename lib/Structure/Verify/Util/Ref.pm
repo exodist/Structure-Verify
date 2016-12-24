@@ -5,6 +5,7 @@ use warnings;
 our $VERSION = '0.001';
 
 use Scalar::Util qw/reftype blessed refaddr/;
+use Carp qw/croak/;
 
 use Importer Importer => 'import';
 our @EXPORT_OK = qw/rtype render_ref/;

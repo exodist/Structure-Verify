@@ -4,12 +4,15 @@ use warnings;
 
 use Carp qw/croak/;
 use Structure::Verify::Util::Ref qw/rtype/;
+use Sub::Info qw/sub_info/;
 
 use Structure::Verify::Delta;
 use Structure::Verify::Meta;
 use Structure::Verify::Got;
 
 our $VERSION = '0.001';
+
+$Carp::Internal{ (__PACKAGE__) }++;
 
 use Importer Importer => 'import';
 our @EXPORT_OK = qw{
@@ -23,28 +26,42 @@ our @EXPORT_OK = qw{
     load_check_as load_checks_as
 };
 
-sub current_build {
+sub current_build() {
     my $meta = Structure::Verify::Meta->new(scalar caller);
     $meta->current_build;
 }
 
-sub build {
+sub build($;$) {
     my ($make, $with) = @_;
-    my $meta = Structure::Verify::Meta->new(scalar caller);
+
+    my @caller = caller(0);
+
+    my $meta = Structure::Verify::Meta->new($caller[0]);
 
     my $class = $make =~ m/^\+(.*)$/ ? $1 : $meta->build_map->{$make};
 
     croak "Not sure how to build a '$make'"
         unless $class;
 
-    my $check  = $class->new;
+    my ($file, $lines);
+    if (rtype($with) eq 'CODE') {
+        my $info = sub_info($with);
+        $file  = $info->{file};
+        $lines = $info->{lines};
+    }
+    else {
+        $file  = $caller[1];
+        $lines = [ $caller[2] ];
+    }
+
+    my $check  = $class->new(file => $file, lines => $lines, via_build => 1);
     my $builds = $meta->builds;
 
     push @$builds => $check;
     my ($ok, $err);
     {
         local ($@, $?, $!);
-        $ok = eval { $check->build($with); 1 };
+        $ok = eval { $check->build($with, $make); 1 };
         $err = $@;
     }
     pop @$builds;
@@ -54,21 +71,21 @@ sub build {
     return $check;
 }
 
-sub check {
+sub check($;$) {
     my $check = pop;
     my $id = shift;
 
     my $meta = Structure::Verify::Meta->new(scalar caller);
     my $build = $meta->current_build or croak "No current build";
 
-    return $build->add_check($id => $check)
+    return $build->add_subcheck($id => $check)
         if defined $id;
 
-    return $build->add_check($check);
+    return $build->add_subcheck($check);
 }
 
 my %CHECKS_REFS = (HASH => 1, ARRAY => 1);
-sub checks {
+sub checks($) {
     my $ref = shift;
     my $type = rtype($ref);
 
@@ -79,14 +96,14 @@ sub checks {
     my $build = $meta->current_build or croak "No current build";
 
     if ($type eq 'HASH') {
-        $build->add_check($_ => $ref->{$_}) for keys %$ref;
+        $build->add_subcheck($_ => $ref->{$_}) for keys %$ref;
     }
     elsif ($type eq 'ARRAY') {
-        $build->add_check(@_) for @$ref;
+        $build->add_subcheck(@_) for @$ref;
     }
 }
 
-sub end {
+sub end() {
     my $meta = Structure::Verify::Meta->new(scalar caller);
     my $build = $meta->current_build or croak "No current build";
 
@@ -96,7 +113,7 @@ sub end {
     $build->set_bounded(1);
 }
 
-sub etc {
+sub etc() {
     my $meta = Structure::Verify::Meta->new(scalar caller);
     my $build = $meta->current_build or croak "No current build";
 
@@ -126,7 +143,7 @@ sub run_checks {
     my ($in, $want, %params) = @_;
 
     my $convert = $params{convert};
-    my $in_path = $params{path};
+    my $in_path = $params{path} || '$_';
 
     my @todo  = ([$in_path || '', $want, Structure::Verify::Got->from_return($in)]);
     my $delta = Structure::Verify::Delta->new();

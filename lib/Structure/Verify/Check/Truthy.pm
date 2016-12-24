@@ -11,11 +11,28 @@ use Structure::Verify::Got;
 use Term::Table::Cell;
 
 my @ORDER = ( +TRUE, +FALSE, +DEFINED, +UNDEFINED, +EXISTS, +NON_EXISTANT );
+my %ALLOW = map { $_ => $_ } @ORDER;
+
+sub BUILD_ALIAS { 'truthy' }
 
 sub operator { 'IN' }
 
 sub from_string {
     my $class = shift;
+    return $class->new(_parse_string_args(@_));
+}
+
+sub init {
+    my $self = shift;
+
+    $self->SUPER::init();
+    return if $self->{+VIA_BUILD};
+
+    croak "At least one state must be specified"
+        unless grep { $self->{$_} } @ORDER;
+}
+
+sub _parse_string_args {
     my ($str) = @_;
     my $orig = $str;
 
@@ -32,14 +49,42 @@ sub from_string {
     croak "The string '$orig' contains invalid or duplicate characters '$str'"
         if length($str);
 
-    return $class->new(%specs);
+    return %specs;
 }
 
-sub init {
+sub build {
     my $self = shift;
+    my ($with, $alias) = @_;
 
-    croak "At least one state must be specified"
-        unless grep { $self->{$_} } @ORDER;
+    my $type = rtype($with);
+
+    if (!$type) {
+        $type = 'HASH';
+        my %specs = _parse_string_args($with);
+    }
+
+    if ($type eq 'ARRAY') {
+        $self->add_subcheck($_ => 1) for @$with;
+        return;
+    }
+    elsif ($type eq 'HASH') {
+        $self->add_subcheck($_ => $with->{$_}) for keys %$with;
+        return;
+    }
+
+    return $self->SUPER::build(@_);
+}
+
+sub add_subcheck {
+    my $self  = shift;
+    my ($thing, $bool) = @_;
+
+    croak "'$thing' is not a valid truthy state"
+        unless $ALLOW{$thing};
+
+    $bool = 1 unless defined $bool;
+
+    $self->{$thing} = $bool;
 }
 
 sub verify {

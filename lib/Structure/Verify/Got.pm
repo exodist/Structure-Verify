@@ -4,8 +4,8 @@ use warnings;
 
 use Term::Table::Cell;
 
-use Structure::Verify::Util::Ref qw/rtype render_ref/;
-use Scalar::Util qw/reftype blessed/;
+use Structure::Verify::Util::Ref qw/render_ref rtype/;
+use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
 use Structure::Verify::HashBase qw/-exists -value -defined -exception/;
@@ -36,7 +36,7 @@ sub from_hash_key {
     my ($ref, $key) = @_;
 
     my $self = bless {}, $class;
-    my $type = reftype($ref);
+    my $type = rtype($ref);
 
     croak "First argument must be a hashref"
         unless $type eq 'HASH';
@@ -60,7 +60,7 @@ sub from_array_idx {
     my ($ref, $idx) = @_;
 
     my $self = bless {}, $class;
-    my $type = reftype($ref);
+    my $type = rtype($ref);
 
     croak "First argument must be an arrayref"
         unless $type eq 'ARRAY';
@@ -126,18 +126,20 @@ sub lines {
     return unless $self->{+DEFINED};
 
     return $self->{+VALUE}->structure_verify_lines
-        if $self->{+VALUE}->can('structure_verify_lines');
+        if blessed($self->{+VALUE})
+        && $self->{+VALUE}->can('structure_verify_lines');
+
+    return;
 }
 
 sub cell {
-    my $self   = shift;
-    my %params = @_;
+    my $self = shift;
 
     return Term::Table::Cell->new(
         value        => 'Exception: ' . $self->{+EXCEPTION},
         border_left  => '>',
         border_right => '<',
-    ) unless $self->{+EXCEPTION};
+    ) if $self->{+EXCEPTION};
 
     return Term::Table::Cell->new(
         value        => 'DOES NOT EXIST',

@@ -6,7 +6,7 @@ use Carp qw/croak/;
 
 sub new;
 
-use Structure::Verify::HashBase qw/-package -build_map/;
+use Structure::Verify::HashBase qw/-package -build_map -builds/;
 
 sub new {
     my $class = shift;
@@ -15,7 +15,14 @@ sub new {
     return $pkg->STRUCTURE_VERIFY
         if $pkg->can('STRUCTURE_VERIFY');
 
-    my $self = bless {BUILD_MAP() => {}, PACKAGE() => $pkg}, $class;
+    my $self = bless(
+        {
+            BUILD_MAP() => {},
+            PACKAGE() => $pkg,
+            BUILDS() => [],
+        },
+        $class
+    );
 
     {
         no strict 'refs';
@@ -23,6 +30,14 @@ sub new {
     }
 
     return $self;
+}
+
+sub current_build {
+    my $self = shift;
+    my $builds = $self->{+BUILDS};
+
+    return unless @$builds;
+    return $builds->[-1];
 }
 
 sub _load {
@@ -64,8 +79,8 @@ sub load {
     my @modules = $self->_load(@_);
 
     for my $mod (@modules) {
-        my $alias = $mod->BUILD_ALIAS;
-        $self->{+BUILD_MAP}->{$alias} = $mod;
+        my @aliases = $mod->BUILD_ALIAS;
+        $self->{+BUILD_MAP}->{$_} = $mod for @aliases;
     }
 
     return;

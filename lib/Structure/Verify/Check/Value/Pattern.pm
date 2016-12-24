@@ -4,16 +4,22 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Value';
 use Structure::Verify::HashBase;
-use Structure::Verify::Behavior::Negatable;
+use Structure::Verify::Behaviors::Negatable;
 
+use Carp qw/croak/;
 use Structure::Verify::Util::Ref qw/rtype/;
+
+sub BUILD_ALIAS { 'pattern' }
 
 sub operator { $_[0]->negate ? '!~' : '=~' }
 
 sub init {
     my $self = shift;
 
-    croak "'value' must be a regular expression"
+    $self->SUPER::init();
+    return if $self->{+VIA_BUILD};
+
+    croak "'value' must be a regular expression (got: $self->{+VALUE})"
         unless rtype($self->{+VALUE}) eq 'REGEXP';
 }
 

@@ -19,7 +19,10 @@ sub add {
 
 sub term_table {
     my $self   = shift;
-    my %colors = @_;
+    my %params = @_;
+
+    my $colors     = $params{colors};
+    my $table_args = $params{table_args} || {};
 
     my @rows = map {
         my ($path, $check, $got, %params) = @{$_};
@@ -27,22 +30,57 @@ sub term_table {
         [
             $path,
             join(', ' => $got->lines),
-            $got->cell(\%colors),
+            $got->cell($colors),
             $check->operator,
-            $check->cell(\%colors),
-            $params{'*'},
+            $check->cell($colors),
+            $params{'*'} || '',
             join(', ' => $check->lines),
         ]
     } @{$self->{+ROWS}};
 
+    # Sort by path Not sure if I want this. Keeping it in defined order might
+    # be best. This also causes 'OUT OF BOUNDS' keys to be scattered
+    # alphabetically instead of all grouped at the end.
+#    @rows = sort {
+#        my $av = $a->[0];
+#        my $bv = $b->[0];
+#        $av =~ s/^\$_//;
+#        $bv =~ s/^\$_//;
+#        $av =~ s/->//g;
+#        $bv =~ s/->//g;
+#
+#        my @a = grep {defined $_} $av =~ m/(?:\{([^\}]+)\}|\[([^\]]+)\]|([\w\d_\-\.]+))/g;
+#        my @b = grep {defined $_} $bv =~ m/(?:\{([^\}]+)\}|\[([^\]]+)\]|([\w\d_\-\.]+))/g;
+#
+#        while (@a && @b) {
+#            my $av = shift @a;
+#            my $bv = shift @b;
+#
+#            my $d;
+#            if ("$av$bv" =~ m/^[\d\.]+$/) {
+#                $d = $av <=> $bv;
+#            }
+#            else {
+#                $d = $av cmp $bv;
+#            }
+#
+#            return $d if $d;
+#        }
+#
+#        return scalar(@a) <=> scalar(@b);
+#    } @rows;
+
     return Term::Table->new(
-        header      => [qw/PATH GLNs GOT OP CHECK * CLNs/],
-        no_collapse => [qw/GOT CHECK/],
-        rows        => \@rows,
         collapse    => 1,
         sanitize    => 1,
         mark_tail   => 1,
         show_header => 1,
+
+        %$table_args,
+
+        header      => [qw/PATH G-LINES GOT OP CHECK * C-LINES/],
+        no_collapse => [qw/GOT CHECK/],
+        rows        => \@rows,
     );
 }
 

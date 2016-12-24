@@ -12,6 +12,8 @@ use Scalar::Util qw/blessed/;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
+sub BUILD_ALIAS { 'object' }
+
 sub operator { 'IS' }
 
 sub cell {
@@ -22,8 +24,22 @@ sub cell {
     );
 }
 
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    if (rtype($with)  eq 'HASH') {
+        $self->add_subcheck($_ => $with->{$_}) for keys %$with;
+        return;
+    }
+
+    return $self->SUPER::build(@_);
+}
+
 sub init {
     my $self = shift;
+
+    $self->SUPER::init();
 
     $self->{+METHODS} ||= [];
 }

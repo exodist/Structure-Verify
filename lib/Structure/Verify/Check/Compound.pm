@@ -7,6 +7,7 @@ use Structure::Verify::HashBase qw/-children -type/;
 
 use Carp qw/croak/;
 use Structure::Verify qw/run_checks/;
+use Structure::Verify::Util::Ref qw/rtype/;
 
 use Structure::Verify::Got;
 use Term::Table::CellStack;
@@ -18,11 +19,33 @@ my %TYPES = (
     none => 1,
 );
 
+sub BUILD_ALIAS { keys %TYPES }
+
 sub init {
     my $self = shift;
 
+    $self->SUPER::init();
+    return if $self->{+VIA_BUILD};
+
     croak "Valid types are: " . join(', ' => sort keys %TYPES)
         unless $TYPES{$self->{+TYPE}};
+}
+
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    croak "'$alias' is not a valid compound type"
+        unless $TYPES{$alias};
+
+    $self->{+TYPE} = $alias;
+
+    if (rtype($with) eq 'ARRAY') {
+        push @{$self->{+CHILDREN}} => @$with;
+        return;
+    }
+
+    return $self->SUPER::build(@_);
 }
 
 sub operator {
@@ -69,6 +92,15 @@ sub complex_check {
     $delta->add($params{path}, $_, $got, $matched{$_} ? ('*' => '*') : ()) for @{$self->{+CHILDREN}};
 
     return 0;
+}
+
+sub add_subcheck {
+    my $self = shift;
+    my ($check, $extra) = @_;
+
+    croak "Too many arguments" if $extra;
+
+    push @{$self->{+CHILDREN}} => $check;
 }
 
 1;

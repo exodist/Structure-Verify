@@ -4,7 +4,9 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Value';
 use Structure::Verify::HashBase;
-use Structure::Verify::Behavior::Negatable;
+use Structure::Verify::Behaviors::Negatable;
+
+sub BUILD_ALIAS { 'number' }
 
 sub operator { $_[0]->negate ? '!=' : '==' }
 

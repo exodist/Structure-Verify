@@ -4,15 +4,20 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Value';
 use Structure::Verify::HashBase;
-use Structure::Verify::Behavior::Negatable;
+use Structure::Verify::Behaviors::Negatable;
 
-use Scalar::Util qw/refaddr/;
+use Carp qw/croak/;
 use Structure::Verify::Util::Ref qw/rtype/;
+
+sub BUILD_ALIAS { 'regex' }
 
 sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
 
 sub init {
     my $self = shift;
+
+    $self->SUPER::init();
+    return if $self->{+VIA_BUILD};
 
     croak "'value' must be a regular expression"
         unless rtype($self->{+VALUE}) eq 'REGEXP';

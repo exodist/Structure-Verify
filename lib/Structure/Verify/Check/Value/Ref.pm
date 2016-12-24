@@ -4,18 +4,34 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Value';
 use Structure::Verify::HashBase;
-use Structure::Verify::Behavior::Negatable;
+use Structure::Verify::Behaviors::Negatable;
 
+use Carp qw/croak/;
 use Scalar::Util qw/refaddr/;
 use Structure::Verify::Util::Ref qw/rtype/;
+
+sub BUILD_ALIAS { 'exact_ref' }
 
 sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
 
 sub init {
     my $self = shift;
 
+    $self->SUPER::init();
+    return if $self->{+VIA_BUILD};
+
     croak "'value' must be a reference"
         unless ref($self->{+VALUE});
+}
+
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    return $self->{+VALUE} = $with
+        if rtype($with);
+
+    return $self->SUPER::build(@_);
 }
 
 sub verify {

@@ -8,15 +8,20 @@ use Structure::Verify::HashBase qw/-components bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 use Structure::Verify qw/run_checks/;
+use Carp qw/croak/;
 
 use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
+sub BUILD_ALIAS { 'bag' }
+
 sub operator { 'IS' }
 
 sub init {
     my $self = shift;
+
+    $self->SUPER::init();
 
     $self->{+COMPONENTS} ||= [];
 }
@@ -43,8 +48,23 @@ sub verify {
 
 sub add_subcheck {
     my $self = shift;
-    my ($check) = @_;
+    my ($check, $extra) = @_;
+
+    croak "Too many arguments" if $extra;
+
     push @{$self->{+COMPONENTS}} => $check;
+}
+
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    if (rtype($with) eq 'ARRAY') {
+        push @{$self->{+COMPONENTS}} => @$with;
+        return;
+    }
+
+    return $self->SUPER::build(@_);
 }
 
 sub complex_check {
@@ -69,7 +89,7 @@ sub complex_check {
 
         for (my $v; $v < @$value; $v++) {
             my $val = Structure::Verify::Got->from_return($value->[$v]);
-            my ($ok) = run_check($val, $check, convert => $convert, path => "$path->[$c]");
+            my ($ok) = run_checks($val, $check, convert => $convert, path => "$path->[$c]");
             $c_ok->{$c} = 1 if $ok;
             $v_ok->{$v} = 1 if $ok;
 

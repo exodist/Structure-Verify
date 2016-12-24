@@ -12,6 +12,8 @@ use Structure::Verify::Got;
 use Structure::Verify::Check::Boundary;
 use Term::Table::Cell;
 
+sub BUILD_ALIAS { 'hash' }
+
 sub operator { 'IS' }
 
 sub cell {
@@ -22,8 +24,22 @@ sub cell {
     );
 }
 
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    if (rtype($with)  eq 'HASH') {
+        $self->add_subcheck($_ => $with->{$_}) for keys %$with;
+        return;
+    }
+
+    return $self->SUPER::build(@_);
+}
+
 sub init {
     my $self = shift;
+
+    $self->SUPER::init();
 
     $self->{+COMPONENTS} ||= [];
 }
@@ -58,7 +74,7 @@ sub subchecks {
     }
 
     if ($self->{+BOUNDED}) {
-        for my $key (keys %$value) {
+        for my $key (sort keys %$value) {
             next if $seen{$key};
 
             my $got = Structure::Verify::Got->from_hash_key($value, $key);

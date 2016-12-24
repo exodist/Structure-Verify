@@ -7,11 +7,12 @@ use parent 'Structure::Verify::Check::Container';
 use Structure::Verify::HashBase qw/-type -subcheck/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
-use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
 use Structure::Verify::Got;
 use Term::Table::Cell;
+
+sub BUILD_ALIAS { 'ref' }
 
 sub operator { 'IS' }
 
@@ -23,8 +24,26 @@ sub cell {
     );
 }
 
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    my $rtype = rtype($with);
+
+    return $self->{+TYPE} = $with
+        unless $rtype;
+
+    $self->{+TYPE} = 'subcheck'
+        if $rtype eq 'CODE';
+
+    return $self->SUPER::build(@_);
+}
+
 sub init {
     my $self = shift;
+
+    $self->SUPER::init();
+    return if $self->{+VIA_BUILD};
 
     my $type = $self->{+TYPE}
         or croak "'type' is required";
@@ -32,6 +51,11 @@ sub init {
     croak "Type '$type' is not allowed to have subchecks"
         if $self->{+SUBCHECK} && $type !~ m/^(SCALAR|REF)$/;
 }
+
+my %SUBCHECK = (
+    SCALAR => 1,
+    REF    => 1,
+);
 
 sub verify {
     my $self = shift;
@@ -41,8 +65,12 @@ sub verify {
     return 0 unless $got->defined;
 
     my $value = $got->value or return 0;
-    return 0 unless rtype($value) eq $self->{+TYPE};
-    return 1;
+    my $type = rtype($value);
+
+    return 1 if $type eq $self->{+TYPE};
+    return 1 if $self->{+TYPE} eq 'subcheck' && $SUBCHECK{$type};
+
+    return 0;
 }
 
 sub subchecks {
@@ -57,6 +85,19 @@ sub subchecks {
     return (
         ["$path\->\$*", $check, Structure::Verify::Got->from_return(${$value})],
     );
+}
+
+sub add_subcheck {
+    my $self = shift;
+    my ($check, $extra) = @_;
+
+    croak "Too many arguments"
+        if $extra;
+
+    croak "Subcheck already set"
+        if $self->{+SUBCHECK};
+
+    $self->{+SUBCHECK} = $check;
 }
 
 1;

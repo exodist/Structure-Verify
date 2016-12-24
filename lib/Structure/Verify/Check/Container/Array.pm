@@ -7,12 +7,33 @@ use parent 'Structure::Verify::Check::Container';
 use Structure::Verify::HashBase qw/-components -idx bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
+use List::Util qw/max/;
 
 use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
+sub BUILD_ALIAS { 'array' }
+
 sub operator { 'IS' }
+
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    my $type = rtype($with);
+
+    if ($type eq 'ARRAY') {
+        $self->add_subcheck($_) for @$with;
+        return;
+    }
+    elsif ($type eq 'HASH') {
+        $self->add_subcheck($_ => $with->{$_}) for keys %$with;
+        return;
+    }
+
+    return $self->SUPER::build(@_);
+}
 
 sub cell {
     return Term::Table::Cell->new(
@@ -24,6 +45,8 @@ sub cell {
 
 sub init {
     my $self = shift;
+
+    $self->SUPER::init();
 
     $self->{+IDX} ||= 0;
     $self->{+COMPONENTS} ||= [];
