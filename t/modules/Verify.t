@@ -1,30 +1,49 @@
-package Structure::Verify;
+use Test2::Tools::Tiny;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
-use Structure::Verify::Util::Ref qw/rtype/;
-use Sub::Info qw/sub_info/;
+use Structure::Verify ':ALL';
 
-use Structure::Verify::Delta;
-use Structure::Verify::Meta;
-use Structure::Verify::Got;
-
-our $VERSION = '0.001';
-
-$Carp::Internal{ (__PACKAGE__) }++;
-
-use Importer Importer => 'import';
-our @EXPORT_OK = qw{
+ok(__PACKAGE__->can($_), "imported $_") for qw{
     build current_build
 
     run_checks
 
     check checks end etc
 
-    load_check      load_checks
-    load_check_as   load_checks_as
+    load_check    load_checks
+    load_check_as load_checks_as
 };
+
+load_check 'Hash';
+load_checks qw/Array String/;
+load_check_as 'Hash' => 'foo';
+load_checks_as Array => 'bar', String => 'baz';
+
+ok($INC{'Structure/Verify/Check/Container/Hash.pm'}, "Loaded hash");
+ok($INC{'Structure/Verify/Check/Container/Array.pm'}, "Loaded array");
+ok($INC{'Structure/Verify/Check/Value/String.pm'}, "Loaded string");
+
+ok(my $meta = __PACKAGE__->STRUCTURE_VERIFY, "Got meta");
+
+is_deeply(
+    $meta->build_map,
+    {
+        hash => 'Structure::Verify::Check::Container::Hash',
+        foo  => 'Structure::Verify::Check::Container::Hash',
+
+        array => 'Structure::Verify::Check::Container::Array',
+        bar   => 'Structure::Verify::Check::Container::Array',
+
+        string => 'Structure::Verify::Check::Value::String',
+        baz    => 'Structure::Verify::Check::Value::String',
+    },
+    "Set up our build map"
+);
+
+done_testing;
+
+__END__
 
 sub current_build() {
     my $meta = Structure::Verify::Meta->new(scalar caller);

@@ -2,7 +2,7 @@ package Structure::Verify::Meta;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
+use Carp qw/croak carp/;
 
 sub new;
 
@@ -78,12 +78,22 @@ sub load {
 
     my @modules = $self->_load(@_);
 
+    my @out;
     for my $mod (@modules) {
         my @aliases = $mod->BUILD_ALIAS;
-        $self->{+BUILD_MAP}->{$_} = $mod for @aliases;
+
+        for my $alias (@aliases) {
+            if (my $m = $self->{+BUILD_MAP}->{$alias}) {
+                carp "check short name '$alias' was set to '$m' but is being reset to '$mod'"
+                    unless $mod eq $m;
+            }
+
+            $self->{+BUILD_MAP}->{$alias} = $mod;
+            push @out => ($alias, $mod);
+        }
     }
 
-    return;
+    return @out;
 }
 
 sub load_as {
@@ -97,14 +107,21 @@ sub load_as {
 
     my @modules = $self->_load(@checks);
 
+    my @out;
     while (@modules) {
         my $module = shift @modules;
         my $alias  = shift @aliases;
 
+        if (my $mod = $self->{+BUILD_MAP}->{$alias}) {
+            carp "check short name '$alias' was set to '$mod' but is being reset to '$module'"
+                unless $mod eq $module;
+        }
+
         $self->{+BUILD_MAP}->{$alias} = $module;
+        push @out => ($alias, $module);
     }
 
-    return;
+    return @out;
 }
 
 1;
