@@ -231,7 +231,7 @@ tests from_method => sub {
         $warnings = warnings { $one = $CLASS->from_method($obj, 'foo', '%') };
         like(
             $warnings->[0],
-            /^Odd number of elements in anonymous hash\.?$/,
+            qr/^Odd number of elements in anonymous hash\.?$/,
             "Not sure where to report warning"
         );
 

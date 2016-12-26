@@ -25,7 +25,7 @@ my $convert = sub {
         if $in->isa('Structure::Verify::Check')
         && !$in->isa('Structure::Verify::Check::Stem');
 
-    return Structure::Verify::Check::Value::String->new(value => $in->stem);
+    return Structure::Verify::Check::Value::String->new(value => $in->stem, file => $in->file, lines => [$in->lines]);
 };
 
 sub isx($$;$) {
@@ -67,10 +67,12 @@ my ($ok, $delta) = run_checks(
             end;
         };
 
+        check b => 'flub';
         check b => build string => 'foox';
         check b => build pattern => qr/foox/;
         check b => !build pattern => qr/foo/;
 
+        check c => 'bub';
         check c => build string => 'barx';
         check c => build pattern => qr/barx/;
         check c => !build pattern => qr/bar/;
@@ -91,25 +93,27 @@ is_deeply(
         '| {a}[0] | 1       | == | 2               | 66     |',
         '| {a}[1] | 2       |    |> OUT OF BOUNDS <| 65, 68 |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | eq | foox            | 70     |',
+        '| {b}    | foo\n   | eq | flub            | 70     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 71     |',
+        '| {b}    | foo\n   | eq | foox            | 71     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 72     |',
+        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 72     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {c}    | bar     | eq | barx            | 74     |',
-        '| {c}    | bar     | =~ |> (?^:barx)     <| 75     |',
-        '| {c}    | bar     | !~ |> (?^:bar)      <| 76     |',
-        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 67, 79 |',
-        '| {d}    | x       |    |> OUT OF BOUNDS <| 67, 79 |',
+        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 73     |',
+        '|        | foo  \t |    |                 |        |',
+        '|        |         |    |                 |        |',
+        '| {c}    | bar     | eq | bub             | 75     |',
+        '| {c}    | bar     | eq | barx            | 76     |',
+        '| {c}    | bar     | =~ |> (?^:barx)     <| 77     |',
+        '| {c}    | bar     | !~ |> (?^:bar)      <| 78     |',
+        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 67, 81 |',
+        '| {d}    | x       |    |> OUT OF BOUNDS <| 67, 81 |',
         '+--------+---------+----+-----------------+--------+',
     ],
     "Got useful table"
 );
-
-#note map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
 
 done_testing;
