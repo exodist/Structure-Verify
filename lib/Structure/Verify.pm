@@ -10,6 +10,7 @@ use Scalar::Util qw/blessed/;
 use Structure::Verify::Delta;
 use Structure::Verify::Meta;
 use Structure::Verify::Got;
+use Structure::Verify::Check::Stem;
 
 our $VERSION = '0.001';
 
@@ -21,7 +22,7 @@ our @EXPORT_OK = qw{
 
     run_checks
 
-    check checks end etc
+    check checks check_pair end etc
 
     load_check      load_checks
     load_check_as   load_checks_as
@@ -76,41 +77,65 @@ sub _build {
     return $check;
 }
 
-sub check($;$) {
-    my $check = pop;
-    my $id = shift;
+sub _add_check {
+    my $caller = shift;
+    my $check  = shift;
+    my ($id) = @_;
 
-    my $meta = Structure::Verify::Meta->new(scalar caller);
+    my $meta = Structure::Verify::Meta->new($caller->[0]);
     my $build = $meta->current_build or croak "No current build";
 
     croak "Check '" . blessed($build) . "' does not support subchecks"
         unless $build->can('add_subcheck');
 
+    $check = Structure::Verify::Check::Stem->new(
+        stem  => $check,
+        file  => $caller->[1],
+        lines => [$caller->[2]],
+    ) unless blessed($check) && $check->isa('Structure::Verify::Check');
+
     return $build->add_subcheck($id => $check)
-        if defined $id;
+        if @_;
 
     return $build->add_subcheck($check);
 }
 
-my %CHECKS_REFS = (HASH => 1, ARRAY => 1);
+sub check($;$) {
+    my $check = pop;
+    my ($id) = @_;
+    my @caller = caller(0);
+
+    return _add_check(\@caller, $check, $id)
+        if @_;
+
+    return _add_check(\@caller, $check);
+}
+
+sub check_pair($$) {
+    my ($c1, $c2) = @_;
+
+    my @caller = caller(0);
+
+    _add_check(\@caller, $c1);
+    _add_check(\@caller, $c2);
+
+    return;
+}
+
 sub checks($) {
     my $ref = shift;
     my $type = rtype($ref);
 
-    croak "'checks' takes either a hashref or an arrayref"
-        unless $CHECKS_REFS{$type};
-
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    my $build = $meta->current_build or croak "No current build";
-
-    croak "Check '" . blessed($build) . "' does not support subchecks"
-        unless $build->can('add_subcheck');
+    my @caller = caller(0);
 
     if ($type eq 'HASH') {
-        $build->add_subcheck($_ => $ref->{$_}) for keys %$ref;
+        _add_check(\@caller, $ref->{$_}, $_) for keys %$ref;
     }
     elsif ($type eq 'ARRAY') {
-        $build->add_subcheck($_) for @$ref;
+        _add_check(\@caller, $_) for @$ref;
+    }
+    else {
+        croak "'checks' takes either a hashref or an arrayref";
     }
 }
 

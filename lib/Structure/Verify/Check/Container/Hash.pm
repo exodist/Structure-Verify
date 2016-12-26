@@ -6,6 +6,7 @@ use parent 'Structure::Verify::Check::Container';
 
 use Structure::Verify::HashBase qw/-components bounded/;
 
+use Carp qw/croak/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
 use Structure::Verify::Got;
@@ -93,6 +94,9 @@ sub subchecks {
 sub add_subcheck {
     my $self = shift;
     my ($key, $check) = @_;
+
+    croak "add_subcheck requires exactly 2 arguments when used with a hash"
+        unless @_ == 2;
 
     push @{$self->{+COMPONENTS}} => [$key, $check];
 }

@@ -9,7 +9,7 @@ ok(__PACKAGE__->can($_), "imported $_") for qw{
 
     run_checks
 
-    check checks end etc
+    check checks check_pair end etc
 
     load_check    load_checks
     load_check_as load_checks_as
@@ -69,12 +69,14 @@ build 'string' => sub {
     package MyCheck;
     use parent 'Structure::Verify::Check';
 
+    our @PREV_ARGS;
     our @ARGS;
 
     sub init { }
 
     sub add_subcheck {
         my $self = shift;
+        @PREV_ARGS = @ARGS;
         @ARGS = @_;
     }
 }
@@ -83,15 +85,29 @@ $meta->build_map->{'cc'} = 'MyCheck';
 
 build cc => sub {
     check 'aaa';
-    is_deeply(\@MyCheck::ARGS, ['aaa'], "1 arg, 1 arg");
+    is_deeply(\@MyCheck::ARGS, [{stem => 'aaa', file => __FILE__, _lines => [__LINE__ - 1]}], "1 arg, 1 arg");
     check a => 1;
-    is_deeply(\@MyCheck::ARGS, [a => 1], "2 args, 2 args");
+    is_deeply(\@MyCheck::ARGS, [a => {stem => 1, file => __FILE__, _lines => [__LINE__ - 1]}], "2 args, 2 args");
 
-    checks [ 'a', 'b' ];
-    is_deeply(\@MyCheck::ARGS, ['b'], "added the check");
+    checks ['a', 'b'];
+    is_deeply(\@MyCheck::ARGS, [{stem => 'b', file => __FILE__, _lines => [__LINE__ - 1]}], "added the check");
 
-    checks { 'a' => 'b' };
-    is_deeply(\@MyCheck::ARGS, ['a', 'b'], "added the check with ids");
+    checks {'a' => 'b'};
+    is_deeply(\@MyCheck::ARGS, ['a', {stem => 'b', file => __FILE__, _lines => [__LINE__ - 1]}], "added the check with ids");
+
+    my $line = __LINE__ + 1;
+    check_pair foo => 'bar';
+    is_deeply(
+        [
+            @MyCheck::PREV_ARGS,
+            @MyCheck::ARGS,
+        ],
+        [
+            {stem => 'foo', file => __FILE__, _lines => [$line]},
+            {stem => 'bar', file => __FILE__, _lines => [$line]},
+        ],
+        "added a pair of checks"
+    );
 
     like(
         exception { end },
