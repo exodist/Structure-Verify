@@ -47,9 +47,19 @@ sub _load {
     for my $check (@_) {
         my $loaded = 0;
 
-        for my $base ('Check/Value', 'Check/Container', 'Check') {
-            my $file = "Structure/Verify/$base/$check.pm";
+        my @paths;
+        if ($check =~ m/^\+(.*)$/) {
+            push @paths => "$1.pm";
+        }
+        else {
+            push @paths => (
+                "Structure/Verify/Check/Value/$check.pm",
+                "Structure/Verify/Check/Container/$check.pm",
+                "Structure/Verify/Check/$check.pm"
+            );
+        }
 
+        for my $file (@paths) {
             my $error;
             {
                 local ($@, $!, $?);

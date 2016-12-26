@@ -80,7 +80,7 @@ sub subchecks {
         $path = "[$path]" if $wrap eq '@';
         $path = "{$path}" if $wrap eq '%';
 
-        my $got = Structure::Verify::Got->from_method($value, $run);
+        my $got = Structure::Verify::Got->from_method($value, $run, $wrap, $self);
 
         [$path, $check, $got]
     } @{$self->{+METHODS}};

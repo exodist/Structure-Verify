@@ -81,7 +81,8 @@ sub from_array_idx {
 
 sub from_method {
     my $class = shift;
-    my ($obj, $meth) = @_;
+    my ($obj, $meth, $wrap, $check) = @_;
+    $wrap ||= "";
 
     croak "A blessed object is required as the first argument"
         unless $obj && blessed($obj);
@@ -90,10 +91,17 @@ sub from_method {
     croak "A method name, or coderef is required as the second argument"
         unless $meth;
 
-    my ($ok, $value, $err);
+    my ($ok, $err, @out);
     {
         local ($@, $!, $?);
-        $ok = eval { $value = $obj->$meth; 1 };
+        if ($wrap) {
+            # List context due to wrapping
+            $ok = eval { @out = $obj->$meth; 1 };
+        }
+        else {
+            # Scalar context, in case of wantarray
+            $ok = eval { $out[0] = $obj->$meth; 1 };
+        }
         $err = $@ unless $ok;
     }
 
@@ -106,7 +114,38 @@ sub from_method {
         $class
     ) unless $ok;
 
-    return $class->from_return($value);
+    return $class->from_return(\@out)
+        if $wrap eq '@';
+
+    if ($wrap eq '%') {
+        my $out;
+
+        # Using 'while' to essentially make an if block that we can break out
+        # of.
+        my ($line, $file);
+        while ($check) {
+            my @lines = $check->lines or last;
+            $line = $lines[-1];
+            $file = $check->file;
+            last;
+        }
+
+        $line ||= 0;
+        $file ||= '';
+        $file .= ' (eval in ' . __FILE__ . ' line ' . __LINE__ . ')';
+
+        {
+            local ($@, $!, $?);
+            $ok = eval qq[#line $line "$file"\n\$out = {\@out}; 1];
+            $err = $@;
+        }
+
+        die $err unless $ok;
+
+        return $class->from_return($out);
+    }
+
+    return $class->from_return(@out);
 }
 
 {
