@@ -10,7 +10,7 @@ use Scalar::Util qw/blessed/;
 use Structure::Verify::Delta;
 use Structure::Verify::Meta;
 use Structure::Verify::Got;
-use Structure::Verify::Check::Stem;
+use Structure::Verify::ProtoCheck;
 
 our $VERSION = '0.001';
 
@@ -88,8 +88,8 @@ sub _add_check {
     croak "Check '" . blessed($build) . "' does not support subchecks"
         unless $build->can('add_subcheck');
 
-    $check = Structure::Verify::Check::Stem->new(
-        stem  => $check,
+    $check = Structure::Verify::ProtoCheck->new(
+        raw   => $check,
         file  => $caller->[1],
         lines => [$caller->[2]],
     ) unless blessed($check) && $check->isa('Structure::Verify::Check');

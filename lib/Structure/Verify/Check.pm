@@ -18,15 +18,29 @@ sub init {
     $self->{+_LINES} ||= delete $self->{lines};
 
     unless ($self->{+_LINES} && $self->{+FILE}) {
-        my $level = 1;
+        my @caller = initial_trace(
+            __PACKAGE__,
+            'Structure::Verify::HashBase',
+        ) or return;
 
-        while (my @caller = caller($level++)) {
-            next if $caller[0]->isa(__PACKAGE__);
-
-            $self->{+FILE}   ||= $caller[1];
-            $self->{+_LINES} ||= [$caller[2]];
-        }
+        $self->{+FILE}   ||= $caller[1];
+        $self->{+_LINES} ||= [$caller[2]];
     }
+}
+
+sub initial_trace {
+    my @exclude = @_;
+    my $level = 1;
+
+    FRAME: while (my @caller = caller($level++)) {
+        for (@exclude) {
+            next FRAME if $caller[0]->isa($_);
+        }
+
+        return @caller;
+    }
+
+    return;
 }
 
 sub build {

@@ -21,11 +21,13 @@ ok(__PACKAGE__->can($_), "imported $_()") for qw/hash array hoop hoot/;
 my $convert = sub {
     my $in = shift;
 
-    return $in
-        if $in->isa('Structure::Verify::Check')
-        && !$in->isa('Structure::Verify::Check::Stem');
+    return $in if $in->isa('Structure::Verify::Check');
 
-    return Structure::Verify::Check::Value::String->new(value => $in->stem, file => $in->file, lines => [$in->lines]);
+    return Structure::Verify::Check::Value::String->new(
+        value => $in->raw,
+        file  => $in->file,
+        lines => $in->lines,
+    );
 };
 
 sub isx($$;$) {
@@ -91,28 +93,28 @@ is_deeply(
         '+--------+---------+----+-----------------+--------+',
         '| PATH   | GOT     | OP | CHECK           | LINES  |',
         '+--------+---------+----+-----------------+--------+',
-        '| {a}[0] | 1       | == | 2               | 66     |',
-        '| {a}[1] | 2       |    |> OUT OF BOUNDS <| 65, 68 |',
+        '| {a}[0] | 1       | == | 2               | 68     |',
+        '| {a}[1] | 2       |    |> OUT OF BOUNDS <| 67, 70 |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | eq | flub            | 70     |',
+        '| {b}    | foo\n   | eq | flub            | 72     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | eq | foox            | 71     |',
+        '| {b}    | foo\n   | eq | foox            | 73     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 72     |',
+        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 74     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 73     |',
+        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 75     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {c}    | bar     | eq | bub             | 75     |',
-        '| {c}    | bar     | eq | barx            | 76     |',
-        '| {c}    | bar     | ne | bar             | 77     |',
-        '| {c}    | bar     | =~ |> (?^:barx)     <| 78     |',
-        '| {c}    | bar     | !~ |> (?^:bar)      <| 79     |',
-        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 67, 82 |',
-        '| {d}    | x       |    |> OUT OF BOUNDS <| 67, 82 |',
+        '| {c}    | bar     | eq | bub             | 77     |',
+        '| {c}    | bar     | eq | barx            | 78     |',
+        '| {c}    | bar     | ne | bar             | 79     |',
+        '| {c}    | bar     | =~ |> (?^:barx)     <| 80     |',
+        '| {c}    | bar     | !~ |> (?^:bar)      <| 81     |',
+        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 69, 84 |',
+        '| {d}    | x       |    |> OUT OF BOUNDS <| 69, 84 |',
         '+--------+---------+----+-----------------+--------+',
     ],
     "Got useful table"

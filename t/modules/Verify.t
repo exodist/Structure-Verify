@@ -85,15 +85,15 @@ $meta->build_map->{'cc'} = 'MyCheck';
 
 build cc => sub {
     check 'aaa';
-    is_deeply(\@MyCheck::ARGS, [{stem => 'aaa', file => __FILE__, _lines => [__LINE__ - 1]}], "1 arg, 1 arg");
+    is_deeply(\@MyCheck::ARGS, [{raw => 'aaa', file => __FILE__, lines => [__LINE__ - 1]}], "1 arg, 1 arg");
     check a => 1;
-    is_deeply(\@MyCheck::ARGS, [a => {stem => 1, file => __FILE__, _lines => [__LINE__ - 1]}], "2 args, 2 args");
+    is_deeply(\@MyCheck::ARGS, [a => {raw => 1, file => __FILE__, lines => [__LINE__ - 1]}], "2 args, 2 args");
 
     checks ['a', 'b'];
-    is_deeply(\@MyCheck::ARGS, [{stem => 'b', file => __FILE__, _lines => [__LINE__ - 1]}], "added the check");
+    is_deeply(\@MyCheck::ARGS, [{raw => 'b', file => __FILE__, lines => [__LINE__ - 1]}], "added the check");
 
     checks {'a' => 'b'};
-    is_deeply(\@MyCheck::ARGS, ['a', {stem => 'b', file => __FILE__, _lines => [__LINE__ - 1]}], "added the check with ids");
+    is_deeply(\@MyCheck::ARGS, ['a', {raw => 'b', file => __FILE__, lines => [__LINE__ - 1]}], "added the check with ids");
 
     my $line = __LINE__ + 1;
     check_pair foo => 'bar';
@@ -103,8 +103,8 @@ build cc => sub {
             @MyCheck::ARGS,
         ],
         [
-            {stem => 'foo', file => __FILE__, _lines => [$line]},
-            {stem => 'bar', file => __FILE__, _lines => [$line]},
+            {raw => 'foo', file => __FILE__, lines => [$line]},
+            {raw => 'bar', file => __FILE__, lines => [$line]},
         ],
         "added a pair of checks"
     );
