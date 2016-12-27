@@ -74,6 +74,7 @@ my ($ok, $delta) = run_checks(
 
         check c => 'bub';
         check c => build string => 'barx';
+        check c => !build string => 'bar';
         check c => build pattern => qr/barx/;
         check c => !build pattern => qr/bar/;
 
@@ -107,13 +108,16 @@ is_deeply(
         '|        |         |    |                 |        |',
         '| {c}    | bar     | eq | bub             | 75     |',
         '| {c}    | bar     | eq | barx            | 76     |',
-        '| {c}    | bar     | =~ |> (?^:barx)     <| 77     |',
-        '| {c}    | bar     | !~ |> (?^:bar)      <| 78     |',
-        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 67, 81 |',
-        '| {d}    | x       |    |> OUT OF BOUNDS <| 67, 81 |',
+        '| {c}    | bar     | ne | bar             | 77     |',
+        '| {c}    | bar     | =~ |> (?^:barx)     <| 78     |',
+        '| {c}    | bar     | !~ |> (?^:bar)      <| 79     |',
+        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 67, 82 |',
+        '| {d}    | x       |    |> OUT OF BOUNDS <| 67, 82 |',
         '+--------+---------+----+-----------------+--------+',
     ],
     "Got useful table"
 );
+
+#note map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
 
 done_testing;

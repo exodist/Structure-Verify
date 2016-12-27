@@ -28,8 +28,10 @@ sub import {
         }
     }
 
-    my @spec = $meta->load(@plain);
-    push @spec => $meta->load_as(@named);
+    my @spec = (
+        $meta->load(@plain),
+        $meta->load_as(@named),
+    );
 
     while (@spec) {
         my $name = shift @spec;
