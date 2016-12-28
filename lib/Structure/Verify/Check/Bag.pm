@@ -8,6 +8,7 @@ use Structure::Verify::HashBase qw/-components bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 use Structure::Verify qw/run_checks/;
+use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
 use Structure::Verify::Check::Boundary;
@@ -48,11 +49,13 @@ sub verify {
 
 sub add_subcheck {
     my $self = shift;
-    my ($check, $extra) = @_;
+    my $check = pop;
+    my $count = @_ ? shift : 1;
 
-    croak "Too many arguments" if $extra;
+    croak "Count $count is invalid, must be 0 or greater"
+        if $count < 0;
 
-    push @{$self->{+COMPONENTS}} => $check;
+    push @{$self->{+COMPONENTS}} => [$count, $check];
 }
 
 sub build {
@@ -60,7 +63,7 @@ sub build {
     my ($with, $alias) = @_;
 
     if (rtype($with) eq 'ARRAY') {
-        push @{$self->{+COMPONENTS}} => @$with;
+        push @{$self->{+COMPONENTS}} => map {[1, $_]} @$with;
         return;
     }
 
@@ -84,31 +87,39 @@ sub complex_check {
     my $v_ok = {};
 
     for (my $c = 0; $c < @$components; $c++) {
-        my $check = $components->[$c];
+        my $want_count = $components->[$c]->[0];
+        my $check      = $components->[$c]->[1];
         $check = $convert->($check) if $convert;
 
-        for (my $v; $v < @$value; $v++) {
-            my $val = Structure::Verify::Got->from_return($value->[$v]);
-            my ($ok) = run_checks($val, $check, convert => $convert, path => "$path\[$c]");
-            $c_ok->{$c} = 1 if $ok;
-            $v_ok->{$v} = 1 if $ok;
+        for (my $v = 0; $v < @$value; $v++) {
+            my ($ok) = run_checks($value->[$v], $check, convert => $convert, path => "$path\[$c]");
 
-            last if $c_ok->{$c} && ($v_ok->{$v} || !$self->{+BOUNDED});
+            next unless $ok;
+            push @{$c_ok->{$c}} => $value->[$v];
+            $v_ok->{$v}++;
         }
 
-        next if $c_ok->{$c};
+        my $count = $c_ok->{$c} ? @{$c_ok->{$c}} : 0;
 
+        next if $count == $want_count;
         $bad++;
-        $delta->add(
-            "$path\[<$c>]",
-            $check,
-            Structure::Verify::Got->from_return()
-        );
+
+        for (my $v = 0; $v < $count || $v < $want_count; $v++) {
+            $delta->add(
+                "$path\<$c>",
+                $check,
+                Structure::Verify::Got->from_array_idx($c_ok->{$c}, $v),
+                notes => "Match " . ($v + 1) . " of $want_count",
+                ($v > $count || $v > $want_count) ? ('*' => '*') : (),
+            );
+        }
+
+        $delta->add_space if $count > 1 || $want_count > 1;
     }
 
     return !$bad unless $self->{+BOUNDED};
 
-    for (my $v; $v < @$value; $v++) {
+    for (my $v = 0; $v < @$value; $v++) {
         next if $v_ok->{$v};
 
         $bad++;
@@ -118,6 +129,33 @@ sub complex_check {
             Structure::Verify::Got->from_array_idx($value, $v)
         );
     }
+
+    return !$bad;
+}
+
+sub _render_trace {
+    my $check = shift;
+
+    my $file  = $check->file;
+    my @lines = $check->lines;
+
+    return '' unless $file || @lines;
+
+    my $out = "";
+    $out .= "at $file"                     if $file;
+    $out .= " "                            if @lines;
+    $out .= "line $lines[0]"               if @lines == 1;
+    $out .= "lines $lines[0] -> $lines[1]" if @lines == 2;
+    $out .= "lines " . join(', ', @lines)  if @lines > 2;
+
+    return "($out)\n  ";
 }
 
 1;
+
+__END__
+            my $b_trace = _render_trace($self);
+            my $c_trace = _render_trace($check);
+
+            warn "Check <${c}${alias}> ${c_trace}in bag ${b_trace}matches too many items in the array:\n$values\n";
+

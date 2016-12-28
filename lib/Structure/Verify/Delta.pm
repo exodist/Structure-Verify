@@ -4,6 +4,8 @@ use warnings;
 
 use Structure::Verify::HashBase qw/-rows/;
 use Term::Table;
+use Term::Table::Cell;
+use Term::Table::Spacer;
 
 sub init {
     my $self = shift;
@@ -17,6 +19,13 @@ sub add {
     push @{$self->{+ROWS}} => [$path, $check, $got, %params];
 }
 
+my $SPACE = [];
+
+sub add_space {
+    my $self = shift;
+    push @{$self->{+ROWS}} => $SPACE;
+}
+
 sub term_table {
     my $self   = shift;
     my %params = @_;
@@ -27,48 +36,24 @@ sub term_table {
     my @rows = map {
         my ($path, $check, $got, %params) = @{$_};
 
-        [
+        $_ == $SPACE ? [Term::Table::Spacer->new] : [
             $path,
-            join(', ' => $got->lines),
-            $got->cell($colors),
+            $got->isa('Term::Table::Cell') ? (
+                undef,
+                $got
+            ) : (
+                join(', ' => $got->lines),
+                $got->cell($colors),
+            ),
             $check->operator,
             $check->cell($colors),
             $params{'*'} || '',
             join(', ' => $check->lines),
+            $params{'notes'},
         ]
     } @{$self->{+ROWS}};
 
-    # Sort by path Not sure if I want this. Keeping it in defined order might
-    # be best. This also causes 'OUT OF BOUNDS' keys to be scattered
-    # alphabetically instead of all grouped at the end.
-#    @rows = sort {
-#        my $av = $a->[0];
-#        my $bv = $b->[0];
-#        $av =~ s/^\$_//;
-#        $bv =~ s/^\$_//;
-#        $av =~ s/->//g;
-#        $bv =~ s/->//g;
-#
-#        my @a = grep {defined $_} $av =~ m/(?:\{([^\}]+)\}|\[([^\]]+)\]|([\w\d_\-\.]+))/g;
-#        my @b = grep {defined $_} $bv =~ m/(?:\{([^\}]+)\}|\[([^\]]+)\]|([\w\d_\-\.]+))/g;
-#
-#        while (@a && @b) {
-#            my $av = shift @a;
-#            my $bv = shift @b;
-#
-#            my $d;
-#            if ("$av$bv" =~ m/^[\d\.]+$/) {
-#                $d = $av <=> $bv;
-#            }
-#            else {
-#                $d = $av cmp $bv;
-#            }
-#
-#            return $d if $d;
-#        }
-#
-#        return scalar(@a) <=> scalar(@b);
-#    } @rows;
+    pop @rows if $self->{+ROWS}->[-1] == $SPACE;
 
     return Term::Table->new(
         collapse    => 1,
@@ -78,7 +63,7 @@ sub term_table {
 
         %$table_args,
 
-        header      => [qw/PATH LINES GOT OP CHECK * LINES/],
+        header      => [qw/PATH LINES GOT OP CHECK * LINES NOTES/],
         no_collapse => [qw/GOT CHECK/],
         rows        => \@rows,
     );
