@@ -101,7 +101,12 @@ sub complex_check {
 
         my $count = $c_ok->{$c} ? @{$c_ok->{$c}} : 0;
 
+        # If we got exactly the count, exactly fine.
         next if $count == $want_count;
+
+        # If we are unbounded we allow extra matches
+        next if $count >= $want_count && $self->{+BOUNDED};
+
         $bad++;
 
         for (my $v = 0; $v < $count || $v < $want_count; $v++) {
@@ -152,10 +157,3 @@ sub _render_trace {
 }
 
 1;
-
-__END__
-            my $b_trace = _render_trace($self);
-            my $c_trace = _render_trace($check);
-
-            warn "Check <${c}${alias}> ${c_trace}in bag ${b_trace}matches too many items in the array:\n$values\n";
-
