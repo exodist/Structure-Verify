@@ -105,7 +105,7 @@ sub complex_check {
         next if $count == $want_count;
 
         # If we are unbounded we allow extra matches
-        next if $count >= $want_count && $self->{+BOUNDED};
+        next if $count >= $want_count && !$self->{+BOUNDED};
 
         $bad++;
 
@@ -113,7 +113,7 @@ sub complex_check {
             $delta->add(
                 "$path\<$c>",
                 $check,
-                Structure::Verify::Got->from_array_idx($c_ok->{$c}, $v),
+                Structure::Verify::Got->from_array_idx($c_ok->{$c} || [], $v),
                 notes => "Match " . ($v + 1) . " of $want_count",
                 ($v > $count || $v > $want_count) ? ('*' => '*') : (),
             );
