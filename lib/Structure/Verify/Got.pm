@@ -8,7 +8,7 @@ use Structure::Verify::Util::Ref qw/render_ref rtype/;
 use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
-use Structure::Verify::HashBase qw/-exists -value -defined -exception/;
+use Structure::Verify::HashBase qw/-exists -value -defined -exception -meta/;
 
 sub from_return {
     my $class = shift;
@@ -210,6 +210,10 @@ sub cell {
 
     return Term::Table::Cell->new(
         value => "$value",
+        $self->{+META} ? (
+            border_left  => '>',
+            border_right => '<',
+        ) : (),
     );
 }
 

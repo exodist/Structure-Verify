@@ -4,23 +4,27 @@ use warnings;
 
 use parent 'Structure::Verify::Check::Container';
 
-use Structure::Verify::HashBase qw/-methods/;
+use Structure::Verify::HashBase qw/-methods -type -subtypes/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 use Scalar::Util qw/blessed/;
+use Carp qw/croak/;
 
+use Structure::Verify::Check::SubType;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
 sub BUILD_ALIAS { 'object' }
 
-sub operator { 'IS' }
+sub operator { 'ISA' }
 
 sub cell {
+    my $self = shift;
+
     return Term::Table::Cell->new(
-        value        => 'Object',
         border_left  => '>',
         border_right => '<',
+        value        => $self->{+TYPE} ? $self->{+TYPE}->raw : 'Object',
     );
 }
 
@@ -42,6 +46,7 @@ sub init {
     $self->SUPER::init();
 
     $self->{+METHODS} ||= [];
+    $self->{+SUBTYPES} ||= [];
 }
 
 sub verify {
@@ -51,18 +56,37 @@ sub verify {
     return 0 unless $got->exists;
     return 0 unless $got->defined;
 
-    my $value = $got->value or return 0;
-    return 0 unless blessed($value);
+    my $value = $got->value     or return 0;
+    my $type  = blessed($value) or return 0;
+
+    return 0 if $self->{+TYPE} && $self->{+TYPE}->raw ne $type;
+
     return 1;
 }
 
 sub subchecks {
     my $self = shift;
-    my ($path, $got) = @_;
+    my ($in_path, $got) = @_;
 
     my $value = $got->value;
 
-    return map {
+    my @checks;
+
+    push @checks => map {
+        my $file  = $_->file;
+        my $lines = $_->lines;
+        my $type  = $_->raw;
+
+        my $check = Structure::Verify::Check::SubType->new(
+            'file'  => $file,
+            'lines' => $lines,
+            'type'  => $type,
+        );
+
+        [$in_path, $check, $got]
+    } @{$self->{+SUBTYPES}};
+
+    push @checks => map {
         my ($do, $check) = @{$_};
 
         my ($name, $run, $wrap);
@@ -76,7 +100,9 @@ sub subchecks {
             ($wrap, $name, $run) = ($1, $2, $2);
         }
 
-        $path = "$path\->$name()";
+        $wrap ||= '';
+
+        my $path = "$in_path\->$name()";
         $path = "[$path]" if $wrap eq '@';
         $path = "{$path}" if $wrap eq '%';
 
@@ -84,14 +110,28 @@ sub subchecks {
 
         [$path, $check, $got]
     } @{$self->{+METHODS}};
+
+    return @checks;
 }
 
 sub add_subcheck {
     my $self = shift;
     my ($sub, $check) = @_;
 
+    if ($sub eq '-blessed') {
+        croak "type already set to '$self->{+TYPE}'"
+            if $self->{+TYPE};
+
+        $self->{+TYPE} = $check;
+
+        return;
+    }
+    elsif ($sub eq '-isa') {
+        push @{$self->{+SUBTYPES}} => $check;
+        return;
+    }
+
     push @{$self->{+METHODS}} => [$sub, $check];
 }
 
 1;
-

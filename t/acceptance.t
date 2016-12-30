@@ -6,7 +6,7 @@ use Test2::API qw/context/;
 
 use Structure::Verify ':ALL';
 use Structure::Verify::Builders(
-    qw{ Hash Array },
+    qw{ Hash Array Object },
     Hash => {-as => 'hoot'},
     Hash => {-as => 'hoop'},
 );
@@ -121,5 +121,37 @@ is_deeply(
 );
 
 #note map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
+
+{
+    package Bar;
+    sub a { 1 };
+
+    package Foo;
+    push @Foo::ISA => 'Bar';
+}
+
+my $x = bless {}, 'Foo';
+
+isx(
+    $x,
+    object {
+        check -blessed => 'Foo::X';
+    },
+    "Check object type"
+);
+
+isx(
+    $x,
+    object {
+        check -isa => 'Foo';
+        check -isa => 'Bar';
+        check -isa => 'Bad1';
+        check -isa => 'Bad2';
+        check -blessed => 'Foo';
+
+        check a => 1;
+    },
+    "Check object type"
+);
 
 done_testing;
