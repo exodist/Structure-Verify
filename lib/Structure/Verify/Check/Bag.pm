@@ -74,6 +74,7 @@ sub complex_check {
     my $g       = $params{got};
     my $path    = $params{path};
     my $delta   = $params{delta};
+    my $state   = $params{state};
     my $convert = $params{convert};
 
     my $components = $self->{+COMPONENTS};
@@ -86,10 +87,15 @@ sub complex_check {
     for (my $c = 0; $c < @$components; $c++) {
         my $want_count = $components->[$c]->[0];
         my $check      = $components->[$c]->[1];
-        $check = $convert->($check) if $convert;
+        ($check, $state) = $convert->($check, $state) if $convert;
 
         for (my $v = 0; $v < @$value; $v++) {
-            my ($ok) = run_checks($value->[$v], $check, convert => $convert, path => "$path\[$c]");
+            my ($ok) = run_checks(
+                $value->[$v], $check,
+                convert => $convert,
+                path    => "$path\[$c]",
+                state   => $state,
+            );
 
             next unless $ok;
             push @{$c_ok->{$c}} => $value->[$v];

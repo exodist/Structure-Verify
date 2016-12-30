@@ -178,17 +178,18 @@ sub load_checks_as {
 sub run_checks {
     my ($in, $want, %params) = @_;
 
-    my $convert = $params{convert};
-    my $in_path = $params{path} || '';
+    my $convert  = $params{convert};
+    my $in_path  = $params{path} || '';
+    my $in_state = $params{state} || {};
 
-    my @todo  = ([$in_path || '', $want, Structure::Verify::Got->from_return($in)]);
+    my @todo  = ([$in_path || '', $want, Structure::Verify::Got->from_return($in), $in_state]);
     my $delta = Structure::Verify::Delta->new();
     my $pass  = 1;
 
     while (my $step = shift @todo) {
-        my ($path, $check, $got) = @$step;
+        my ($path, $check, $got, $state) = @$step;
 
-        $check = $convert->($check) if $convert;
+        ($check, $state) = $convert->($check, $state) if $convert;
 
         croak(($path ? "$path: " : "") . (defined($check) ? "'$check'" : "<undef>") . " is not a valid check")
             unless $check && $check->isa('Structure::Verify::Check');
@@ -205,6 +206,7 @@ sub run_checks {
                 got     => $got,
                 delta   => $delta,
                 convert => $convert,
+                state   => $state,
             );
 
             unless ($ok) {
@@ -213,7 +215,7 @@ sub run_checks {
             }
         }
 
-        unshift @todo => $check->subchecks($path, $got)
+        unshift @todo => map { push @{$_} => $state; $_ } $check->subchecks($path, $got)
             if $check->can('subchecks');
     }
 

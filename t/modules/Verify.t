@@ -190,7 +190,7 @@ like(
     "Must have a valid check (nested)"
 );
 
-my ($ok) = run_checks('xxx', 'xxx', convert => sub { build string => $_[0] } );
+my ($ok) = run_checks('xxx', 'xxx', convert => sub { (build(string => $_[0]), $_[1]) } );
 ok($ok, "Success via convert");
 
 done_testing;

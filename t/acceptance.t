@@ -19,15 +19,15 @@ load_checks qw{
 ok(__PACKAGE__->can($_), "imported $_()") for qw/hash array hoop hoot/;
 
 my $convert = sub {
-    my $in = shift;
+    my ($in, $state) = @_;
 
-    return $in if $in->isa('Structure::Verify::Check');
-
-    return Structure::Verify::Check::Value::String->new(
+    return ($in, $state) if $in->isa('Structure::Verify::Check');
+    my $new = Structure::Verify::Check::Value::String->new(
         value => $in->raw,
         file  => $in->file,
         lines => $in->lines,
     );
+    return ($new, $state);
 };
 
 sub isx($$;$) {

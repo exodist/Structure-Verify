@@ -7,7 +7,7 @@ use Structure::Verify::Convert qw/convert/;
 use Structure::Verify::Builders qw/Bag/;
 use List::Util qw/shuffle/;
 
-my $c = sub { convert($_[0], {use_regex => 1}) };
+my $c = sub { convert($_[0], $_[1], {use_regex => 1}) };
 
 my ($bool, $delta) = run_checks(
     [shuffle qw/ foo bar baz /],
