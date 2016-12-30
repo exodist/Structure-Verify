@@ -50,10 +50,7 @@ sub verify {
 sub add_subcheck {
     my $self = shift;
     my $check = pop;
-    my $count = @_ ? shift : 1;
-
-    croak "Count $count is invalid, must be 0 or greater"
-        if $count < 0;
+    my $count = @_ ? shift : -1;
 
     push @{$self->{+COMPONENTS}} => [$count, $check];
 }
@@ -101,11 +98,14 @@ sub complex_check {
 
         my $count = $c_ok->{$c} ? @{$c_ok->{$c}} : 0;
 
+        # Default count is 1 instead of -1 when bounded
+        $want_count = 1 if $want_count < 0 && $self->{+BOUNDED};
+
         # If we got exactly the count, exactly fine.
         next if $count == $want_count;
 
-        # If we are unbounded we allow extra matches
-        next if $count >= $want_count && !$self->{+BOUNDED};
+        # Negative 'want_count' means any number
+        next if $count > $want_count && $want_count < 0;
 
         $bad++;
 
