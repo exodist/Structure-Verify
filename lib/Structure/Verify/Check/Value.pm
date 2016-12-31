@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Carp qw/croak/;
-use Structure::Verify::Util::Ref qw/render_ref rtype/;
+use Structure::Verify::Util::Ref qw/render_ref rtype ref_cell/;
 
 use parent 'Structure::Verify::Check';
 use Structure::Verify::HashBase qw/-value/;
@@ -44,31 +44,10 @@ sub cell {
         border_right => '<',
     ) unless defined $value;
 
-    if (my $type = rtype($value)) {
-        my $refa = $type eq 'REGEXP' ? "$value" : render_ref($value);
-        my $refb = "$value";
+    return Term::Table::Cell->new(value => "$value")
+        unless ref $value;
 
-        my @cells;
-
-        push @cells => Term::Table::Cell->new(
-            value        => $refa,
-            border_left  => '>',
-            border_right => '<',
-        );
-
-        push @cells => Term::Table::Cell->new(
-            value        => $refb,
-            border_left  => '>',
-            border_right => '<',
-        ) if $refa ne $refb;
-
-        return $cells[0] unless @cells > 1;
-        return Term::Table::CellStack->new(cells => \@cells);
-    }
-
-    return Term::Table::Cell->new(
-        value => "$value",
-    );
+    return ref_cell($value);
 }
 
 1;

@@ -33,7 +33,7 @@ my $convert = sub {
 sub isx($$;$) {
     my ($ok, $delta) = run_checks($_[0], $_[1], convert => $convert);
     my $ctx = context;
-    ok($ok, $_[2]) || diag map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
+    ok($ok, $_[2]) || diag map {"$_\n"} $delta->term_table->render;
     $ctx->release;
     return $ok;
 }
@@ -121,37 +121,5 @@ is_deeply(
 );
 
 #note map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
-
-{
-    package Bar;
-    sub a { 1 };
-
-    package Foo;
-    push @Foo::ISA => 'Bar';
-}
-
-my $x = bless {}, 'Foo';
-
-isx(
-    $x,
-    object {
-        check -blessed => 'Foo::X';
-    },
-    "Check object type"
-);
-
-isx(
-    $x,
-    object {
-        check -isa => 'Foo';
-        check -isa => 'Bar';
-        check -isa => 'Bad1';
-        check -isa => 'Bad2';
-        check -blessed => 'Foo';
-
-        check a => 1;
-    },
-    "Check object type"
-);
 
 done_testing;

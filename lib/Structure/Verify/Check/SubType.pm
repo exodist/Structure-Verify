@@ -8,6 +8,7 @@ use Structure::Verify::HashBase qw/-type/;
 
 use Carp qw/croak/;
 use Scalar::Util qw/blessed/;
+use Structure::Verify::Util::Ref qw/render_ref/;
 
 sub BUILD_ALIAS { 'subtype' }
 
@@ -52,7 +53,7 @@ sub build {
 
 sub cell {
     my $self = shift;
-    return Term::Table::Cell->new(value => $self->{+TYPE});
+    return Term::Table::Cell->new(value => render_ref($self->{+TYPE}, 1));
 }
 
 1;

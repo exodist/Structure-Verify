@@ -7,8 +7,11 @@ our $VERSION = '0.001';
 use Scalar::Util qw/reftype blessed refaddr/;
 use Carp qw/croak/;
 
+use Term::Table::Cell;
+use Term::Table::CellStack;
+
 use Importer Importer => 'import';
-our @EXPORT_OK = qw/rtype render_ref/;
+our @EXPORT_OK = qw/rtype render_ref ref_cell/;
 
 sub rtype {
     my ($thing) = @_;
@@ -24,7 +27,7 @@ sub rtype {
 }
 
 sub render_ref {
-    my ($in) = @_;
+    my ($in, $noaddr) = @_;
 
     return 'undef' unless defined($in);
 
@@ -33,11 +36,38 @@ sub render_ref {
 
     # Look past overloading
     my $class = blessed($in) || '';
-    my $it = sprintf('0x%x', refaddr($in));
+    my $it = $noaddr ? '...' : sprintf('0x%x', refaddr($in));
     my $ref = "$type($it)";
 
     return $ref unless $class;
     return "$class=$ref";
+}
+
+sub ref_cell {
+    my $input = shift;
+
+    my $type = rtype($input) or return;
+
+    my $refa = $type eq 'REGEXP' ? "$input" : render_ref($input);
+    my $refb = "$input";
+    my $refc = $type eq 'REGEXP' ? "$input" : render_ref($input, 1);
+
+    my @cells;
+
+    push @cells => Term::Table::Cell->new(
+        value        => $refc,
+        border_left  => '>',
+        border_right => '<',
+    );
+
+    push @cells => Term::Table::Cell->new(
+        value        => $refb,
+        border_left  => ' ',
+        border_right => ' ',
+    ) if $refa ne $refb;
+
+    return $cells[0] unless @cells > 1;
+    return Term::Table::CellStack->new(cells => \@cells);
 }
 
 1;

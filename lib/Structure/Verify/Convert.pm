@@ -24,7 +24,9 @@ use Scalar::Util qw/blessed/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
 use Importer Importer => 'import';
-our @EXPORT_OK = qw{convert};
+our @EXPORT_OK = qw{convert basic_convert};
+
+sub basic_convert { convert($_[0], $_[1], {use_regex => 1, set_bounded => 1}) }
 
 sub convert {
     my ($in, $state, $params) = @_;

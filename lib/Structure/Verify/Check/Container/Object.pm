@@ -16,7 +16,7 @@ use Term::Table::Cell;
 
 sub BUILD_ALIAS { 'object' }
 
-sub operator { 'ISA' }
+sub operator { 'BLESSED' }
 
 sub cell {
     my $self = shift;
@@ -102,7 +102,8 @@ sub subchecks {
 
         $wrap ||= '';
 
-        my $path = "$in_path\->$name()";
+        my $path = $in_path;
+        $path .= "->$name()";
         $path = "[$path]" if $wrap eq '@';
         $path = "{$path}" if $wrap eq '%';
 

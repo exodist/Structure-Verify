@@ -3,8 +3,9 @@ use strict;
 use warnings;
 
 use Term::Table::Cell;
+use Term::Table::CellStack;
 
-use Structure::Verify::Util::Ref qw/render_ref rtype/;
+use Structure::Verify::Util::Ref qw/render_ref rtype ref_cell/;
 use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
@@ -194,27 +195,15 @@ sub cell {
 
     my $value = $self->value;
 
-    if (ref($value)) {
-        my $refa = render_ref($value);
-        my $refb = "$value";
-
-        my $val_string = $refa;
-        $val_string .= "\n$refb" if $refa ne $refb;
-
-        return Term::Table::Cell->new(
-            value        => $val_string,
-            border_left  => '>',
-            border_right => '<',
-        );
-    }
-
     return Term::Table::Cell->new(
         value => "$value",
         $self->{+META} ? (
             border_left  => '>',
             border_right => '<',
         ) : (),
-    );
+    ) unless ref($value);
+
+    return ref_cell($value);
 }
 
 1;
