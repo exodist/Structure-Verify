@@ -2,6 +2,9 @@ package Structure::Verify::Convert;
 use strict;
 use warnings;
 
+use Structure::Verify::Check();
+use Structure::Verify::ProtoCheck();
+
 use Structure::Verify::Check::Bag();
 use Structure::Verify::Check::Boundary();
 use Structure::Verify::Check::Compound();
@@ -24,9 +27,11 @@ use Scalar::Util qw/blessed/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
 use Importer Importer => 'import';
-our @EXPORT_OK = qw{convert basic_convert};
+our @EXPORT_OK = qw{convert basic_convert relaxed_convert strict_convert};
 
-sub basic_convert { convert($_[0], $_[1], {use_regex => 1, set_bounded => 1}) }
+sub basic_convert   { convert($_[0], $_[1], {use_regex => 1, implicit_end => 1}) }
+sub relaxed_convert { convert($_[0], $_[1], {use_regex => 1, implicit_end => 0}) }
+sub strict_convert  { convert($_[0], $_[1], {use_regex => 0, implicit_end => 0}) }
 
 sub convert {
     my ($in, $state, $params) = @_;
@@ -54,7 +59,8 @@ sub convert {
     $args{lines} = $lines if $lines;
     $args{file}  = $file  if $file;
 
-    my $type = rtype($in);
+    my $type    = rtype($in);
+    my $blessed = blessed($in) || "";
 
     my $build = sub {
         my ($type, $manage_state) = @_;
@@ -85,8 +91,13 @@ sub convert {
         return ($new, $new_state);
     };
 
+    # Non-refs are just treated as strings
     return $build->('Structure::Verify::Check::Value::String', 0)
         unless $type;
+
+    # If a blessed object is passed in we will check that we get the exact object.
+    return $build->('Structure::Verify::Check::Value::Ref', 0)
+        if $blessed && $blessed ne 'Regexp';
 
     return $build->('Structure::Verify::Check::Container::Array', 1)
         if $type eq 'ARRAY';

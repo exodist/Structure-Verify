@@ -3,10 +3,9 @@ use strict;
 use warnings;
 
 use Structure::Verify ':ALL';
-use Structure::Verify::Builders qw/ Object /;
+use Structure::Verify::Autoload;
+use Structure::Verify::Builders qw/ object /;
 use Structure::Verify::Convert qw/ basic_convert /;
-
-#load_checks qw{};
 
 {
     package Bar;
@@ -43,7 +42,7 @@ is_deeply(
         '+-----------------+---------+----------+-------+',
         '| GOT             | OP      | CHECK    | LINES |',
         '+-----------------+---------+----------+-------+',
-        '|> Foo=HASH(...) <| BLESSED |> Foo::X <| 33    |',
+        '|> Foo=HASH(...) <| BLESSED |> Foo::X <| 32    |',
         '+-----------------+---------+----------+-------+',
     ],
     "Table shows incorrect type"
@@ -72,9 +71,9 @@ is_deeply(
         '+-------+-----------------+-----+-------+-------+',
         '| PATH  | GOT             | OP  | CHECK | LINES |',
         '+-------+-----------------+-----+-------+-------+',
-        '|       |> Foo=HASH(...) <| ISA | Bad1  | 57    |',
-        '|       |> Foo=HASH(...) <| ISA | Bad2  | 58    |',
-        '| ->a() | 1               | eq  | 2     | 62    |',
+        '|       |> Foo=HASH(...) <| ISA | Bad1  | 56    |',
+        '|       |> Foo=HASH(...) <| ISA | Bad2  | 57    |',
+        '| ->a() | 1               | eq  | 2     | 61    |',
         '+-------+-----------------+-----+-------+-------+',
     ],
     "Got 2 failed isa checks, and 1 failed method check"
@@ -103,10 +102,10 @@ is_deeply(
         '+-----------------+-----+-------+-------+',
         '| GOT             | OP  | CHECK | LINES |',
         '+-----------------+-----+-------+-------+',
-        '|> Baz=HASH(...) <| ISA | Bad1  | 89    |',
+        '|> Baz=HASH(...) <| ISA | Bad1  | 88    |',
         '|  BAAAAZZZZ      |     |       |       |',
         '|                 |     |       |       |',
-        '|> Baz=HASH(...) <| ISA | Bad2  | 90    |',
+        '|> Baz=HASH(...) <| ISA | Bad2  | 89    |',
         '|  BAAAAZZZZ      |     |       |       |',
         '+-----------------+-----+-------+-------+',
     ],

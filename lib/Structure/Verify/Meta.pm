@@ -6,7 +6,7 @@ use Carp qw/croak carp/;
 
 sub new;
 
-use Structure::Verify::HashBase qw/-package -build_map -builds/;
+use Structure::Verify::HashBase qw/-package -build_map -builds use_autoload/;
 
 sub new {
     my $class = shift;
@@ -40,98 +40,29 @@ sub current_build {
     return $builds->[-1];
 }
 
-sub _load {
+sub add_alias {
     my $self = shift;
+    my ($alias, $mod) = @_;
 
-    my @modules;
-    for my $check (@_) {
-        my $loaded = 0;
-
-        my @paths;
-        if ($check =~ m/^\+(.*)$/) {
-            push @paths => "$1.pm";
-        }
-        else {
-            push @paths => (
-                "Structure/Verify/Check/Value/$check.pm",
-                "Structure/Verify/Check/Container/$check.pm",
-                "Structure/Verify/Check/$check.pm"
-            );
-        }
-
-        for my $file (@paths) {
-            my $error;
-            {
-                local ($@, $!, $?);
-                $loaded = $file if eval { require $file; 1 };
-                $error = $@;
-            }
-
-            last if $loaded;
-            next if $error =~ m/Can't locate \Q$file\E in \@INC/;
-            die $error;
-        }
-
-        my $mod = $loaded or croak "Could not find check $check";
-
-        $mod =~ s{/}{::}g;
-        $mod =~ s{\.pm$}{}g;
-
-        push @modules => $mod;
+    if (my $m = $self->{+BUILD_MAP}->{$alias}) {
+        carp "check short name '$alias' was set to '$m' but is being reset to '$mod'"
+            unless $mod eq $m;
     }
 
-    return @modules;
+    $self->{+BUILD_MAP}->{$alias} = $mod;
 }
 
-sub load {
+sub find_build {
     my $self = shift;
+    my ($alias) = @_;
 
-    my @modules = $self->_load(@_);
+    return $self->{+BUILD_MAP}->{$alias}
+        if $self->{+BUILD_MAP}->{$alias};
 
-    my @out;
-    for my $mod (@modules) {
-        my @aliases = $mod->BUILD_ALIAS;
+    return unless $self->{+USE_AUTOLOAD};
 
-        for my $alias (@aliases) {
-            if (my $m = $self->{+BUILD_MAP}->{$alias}) {
-                carp "check short name '$alias' was set to '$m' but is being reset to '$mod'"
-                    unless $mod eq $m;
-            }
-
-            $self->{+BUILD_MAP}->{$alias} = $mod;
-            push @out => ($alias, $mod);
-        }
-    }
-
-    return @out;
-}
-
-sub load_as {
-    my $self = shift;
-
-    my (@checks, @aliases);
-    while (@_) {
-        push @checks  => shift;
-        push @aliases => shift;
-    }
-
-    my @modules = $self->_load(@checks);
-
-    my @out;
-    while (@modules) {
-        my $module = shift @modules;
-        my $alias  = shift @aliases;
-
-        if (my $mod = $self->{+BUILD_MAP}->{$alias}) {
-            carp "check short name '$alias' was set to '$mod' but is being reset to '$module'"
-                unless $mod eq $module;
-        }
-
-        $self->{+BUILD_MAP}->{$alias} = $module;
-        push @out => ($alias, $module);
-    }
-
-    return @out;
+    require Structure::Verify::Autoload;
+    return Structure::Verify::Autoload->find($alias);
 }
 
 1;

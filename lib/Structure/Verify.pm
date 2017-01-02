@@ -23,9 +23,6 @@ our @EXPORT_OK = qw{
     run_checks
 
     check checks check_pair end etc
-
-    load_check      load_checks
-    load_check_as   load_checks_as
 };
 
 sub current_build() {
@@ -35,7 +32,6 @@ sub current_build() {
 
 sub build($$) {
     my @caller = caller(0);
-
     _build(\@caller, @_);
 }
 
@@ -44,7 +40,13 @@ sub _build {
 
     my $meta = Structure::Verify::Meta->new($caller->[0]);
 
-    my $class = $make =~ m/^\+(.*)$/ ? $1 : $meta->build_map->{$make};
+    my $class;
+    if ($make =~ m/^\+(.*)$/) {
+        $class = $1;
+    }
+    else {
+        $class = $meta->find_build($make);
+    }
 
     croak "Not sure how to build a '$make'"
         unless $class;
@@ -157,22 +159,6 @@ sub etc() {
         unless $build->can('set_bounded');
 
     $build->set_bounded(0);
-}
-
-{
-    no warnings 'once';
-    *load_check      = \&load_checks;
-    *load_check_as   = \&load_checks_as;
-}
-
-sub load_checks {
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    $meta->load(@_);
-}
-
-sub load_checks_as {
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    $meta->load_as(@_);
 }
 
 sub run_checks {

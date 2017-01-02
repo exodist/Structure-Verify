@@ -26,10 +26,13 @@ push @{$meta->builds} => qw/a b c/;
 is($meta->current_build, 'c', "Last build is latest build");
 @{$meta->builds} = ();
 
-$meta->load(qw/String Hash Bag/);
-ok($INC{'Structure/Verify/Check/Value/String.pm'}, "Loaded string");
-ok($INC{'Structure/Verify/Check/Container/Hash.pm'}, "Loaded hash");
-ok($INC{'Structure/Verify/Check/Bag.pm'}, "Loaded bag");
+require Structure::Verify::Check::Value::String;
+require Structure::Verify::Check::Container::Hash;
+require Structure::Verify::Check::Bag;
+Structure::Verify::Check::Value::String->import;
+Structure::Verify::Check::Container::Hash->import;
+Structure::Verify::Check::Bag->import;
+
 is_deeply(
     $meta->build_map,
     {
@@ -40,15 +43,15 @@ is_deeply(
     "Build map",
 );
 
-$meta->load_as(
-    Array    => 'ar',
-    Boundary => 'bo',
-    Pattern  => 'pt',
-    Regex    => 'number'
-);
-ok($INC{'Structure/Verify/Check/Value/Pattern.pm'},   "Loaded pattern");
-ok($INC{'Structure/Verify/Check/Container/Array.pm'}, "Loaded array");
-ok($INC{'Structure/Verify/Check/Boundary.pm'},        "Loaded boundary");
+require Structure::Verify::Check::Container::Array;
+require Structure::Verify::Check::Value::Pattern;
+require Structure::Verify::Check::Value::Regex;
+require Structure::Verify::Check::Boundary;
+Structure::Verify::Check::Container::Array->import('ar');
+Structure::Verify::Check::Value::Pattern->import('pt');
+Structure::Verify::Check::Value::Regex->import('number');
+Structure::Verify::Check::Boundary->import('bo');
+
 is_deeply(
     $meta->build_map,
     {
@@ -65,30 +68,14 @@ is_deeply(
     "Build map",
 );
 
-my $warnings = warnings { $meta->load('Number') };
+my $warnings = warnings {
+    require Structure::Verify::Check::Value::Number;
+    Structure::Verify::Check::Value::Number->import;
+};
 like(
     $warnings->[0],
     qr/check short name 'number' was set to 'Structure::Verify::Check::Value::Regex' but is being reset to 'Structure::Verify::Check::Value::Number'/,
     "Redefined 'number'"
-);
-
-$warnings = warnings { $meta->load_as('Regex' => 'number') };
-like(
-    $warnings->[0],
-    qr/check short name 'number' was set to 'Structure::Verify::Check::Value::Number' but is being reset to 'Structure::Verify::Check::Value::Regex'/,
-    "Redefined 'number' again"
-);
-
-like(
-    exception { $meta->load('123Fake-.!~') },
-    qr/\QCould not find check 123Fake-.!~\E/,
-    "Cannot find fake check"
-);
-
-like(
-    exception { local @INC = ('t/lib', 'lib'); $meta->load('+Broken') },
-    qr/^oops at/,
-    "Exception in broken check code propogated"
 );
 
 done_testing;

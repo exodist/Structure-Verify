@@ -174,6 +174,7 @@ sub lines {
 
 sub cell {
     my $self = shift;
+    my %params = @_;
 
     return Term::Table::Cell->new(
         value        => 'Exception: ' . $self->{+EXCEPTION},
@@ -203,7 +204,7 @@ sub cell {
         ) : (),
     ) unless ref($value);
 
-    return ref_cell($value);
+    return ref_cell($value, $params{show_address});
 }
 
 1;

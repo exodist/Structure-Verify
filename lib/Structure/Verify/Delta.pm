@@ -48,14 +48,14 @@ sub term_table {
         my $notes = $params{'notes'} || '';
 
         $_ == $SPACE ? [Term::Table::Spacer->new] : [
-            $self->cell(path        => $path,        $colors->{path}),
-            $self->cell(got_lines   => $got_lines,   $colors->{got_lines}),
-            $self->cell(got         => $got,         $colors->{got}),
-            $self->cell(operator    => $operator,    $colors->{operator}),
-            $self->cell(check       => $check,       $colors->{check}),
-            $self->cell(star        => $star,        $colors->{star}),
-            $self->cell(check_lines => $check_lines, $colors->{check_lines}),
-            $self->cell(notes       => $notes,       $colors->{notes}),
+            $self->cell(path        => $path,        $check, $colors->{path}),
+            $self->cell(got_lines   => $got_lines,   $check, $colors->{got_lines}),
+            $self->cell(got         => $got,         $check, $colors->{got}),
+            $self->cell(operator    => $operator,    $check, $colors->{operator}),
+            $self->cell(check       => $check,       $check, $colors->{check}),
+            $self->cell(star        => $star,        $check, $colors->{star}),
+            $self->cell(check_lines => $check_lines, $check, $colors->{check_lines}),
+            $self->cell(notes       => $notes,       $check, $colors->{notes}),
         ];
     } @{$self->{+ROWS}};
 
@@ -77,26 +77,29 @@ sub term_table {
 
 sub cell {
     my $self = shift;
-    my ($name, $input, $colors) = @_;
+    my ($name, $input, $check, $colors) = @_;
 
     return $input unless defined $input;
 
     my $length = length($input);
     my $type   = rtype($input);
 
-    my ($can, $isa);
+    my ($can, $isa, $got);
     if (blessed $input) {
         $can = $input->can('cell') || 0;
         $isa = $input->isa('Term::Table::Cell') || $input->isa('Term::Table::CellStack') || 0;
+        $got = $input->isa('Structure::Verify::Got');
     }
 
     # Short-Circuit
     return $input unless $length || $type || $can || $isa;
 
+    my $show_address = $check ? $check->SHOW_ADDRESS : 0;
+
     my $cell;
     if    ($isa)  { $cell = $input }
-    elsif ($can)  { $cell = $input->cell }
-    elsif ($type) { $cell = ref_cell($input) }
+    elsif ($can)  { $cell = $input->cell(show_address => $show_address) }
+    elsif ($type) { $cell = ref_cell($input, !$show_address) }
     else          { $cell = Term::Table::Cell->new(value => $input) }
 
     return $cell unless $colors;

@@ -10,19 +10,15 @@ ok(__PACKAGE__->can($_), "imported $_") for qw{
     run_checks
 
     check checks check_pair end etc
-
-    load_check    load_checks
-    load_check_as load_checks_as
 };
 
-load_check 'Hash';
-load_checks qw/Array String/;
-load_check_as 'Hash' => 'foo';
-load_checks_as Array => 'bar', String => 'baz';
+use Structure::Verify::Check::Container::Hash;
+use Structure::Verify::Check::Container::Array;
+use Structure::Verify::Check::Value::String;
 
-ok($INC{'Structure/Verify/Check/Container/Hash.pm'}, "Loaded hash");
-ok($INC{'Structure/Verify/Check/Container/Array.pm'}, "Loaded array");
-ok($INC{'Structure/Verify/Check/Value/String.pm'}, "Loaded string");
+use Structure::Verify::Check::Container::Hash qw/foo/;
+use Structure::Verify::Check::Container::Array qw/bar/;
+use Structure::Verify::Check::Value::String qw/baz/;
 
 ok(my $meta = __PACKAGE__->STRUCTURE_VERIFY, "Got meta");
 

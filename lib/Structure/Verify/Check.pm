@@ -2,15 +2,29 @@ package Structure::Verify::Check;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
+use Carp qw/croak carp/;
 use Scalar::Util qw/blessed/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
 use Structure::Verify::HashBase qw/-_lines -file -via_build/;
 
 use Term::Table::Cell;
+use Structure::Verify::Meta;
 
 sub BUILD_ALIAS { }
+
+sub SHOW_ADDRESS { 0 }
+
+sub import {
+    my $class = shift;
+    my @aliases = @_;
+
+    @aliases = $class->BUILD_ALIAS unless @aliases;
+    return unless @aliases;
+
+    my $meta = Structure::Verify::Meta->new(scalar caller);
+    $meta->add_alias($_, $class) for @aliases;
+}
 
 sub init {
     my $self = shift;

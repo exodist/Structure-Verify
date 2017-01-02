@@ -5,9 +5,6 @@ use warnings;
 use Test2::API qw/context/;
 
 use Structure::Verify ':ALL';
-use Structure::Verify::Builders(
-    qw{ Hash Array },
-);
 
 use Structure::Verify::Convert qw/convert/;
 

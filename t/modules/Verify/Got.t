@@ -3,8 +3,8 @@ use strict;
 use warnings;
 
 use Structure::Verify::Got;
-use Structure::Verify qw/build load_check/;
-load_check 'String';
+use Structure::Verify qw/build/;
+use Structure::Verify::Check::Value::String;
 
 my $CLASS = 'Structure::Verify::Got';
 
@@ -239,79 +239,47 @@ tests from_method => sub {
         is($one->defined, 1, "it is defined");
         is_deeply($one->value, {'foo' => undef}, "Scalar was wrapped in a hash");
     };
+
+    tests with_error => sub {
+        $one = $CLASS->from_method($obj, 'not_a_method');
+        is($one->exists,  0, "it does not exist");
+        is($one->defined, 0, "it is not defined");
+
+        is_deeply($one->value, undef, "No value");
+
+        like(
+            $one->exception,
+            qr/Can't locate object method "not_a_method" via package "TestObj"/,
+            "Got exception"
+        );
+    };
+};
+
+tests lines => sub {
+    {
+        package TestObj2;
+        sub structure_verify_lines { (1, 2) }
+    }
+
+    my $one = $CLASS->new(value => '');
+    my $two = $CLASS->new(value => bless({}, 'TestObj2'));
+    ok(!$one->lines, "No Lines when it does not exist");
+    ok(!$two->lines, "No Lines when it does not exist");
+
+    $one->{exists} = 1;
+    $two->{exists} = 1;
+    ok(!$one->lines, "No Lines when it is not defined");
+    ok(!$two->lines, "No Lines when it is not defined");
+
+    $one->{defined} = 1;
+    $two->{defined} = 1;
+    ok(!$one->lines, "No Lines when not blessed");
+    is_deeply([$two->lines], [1, 2], "got lines");
 };
 
 done_testing;
 
 __END__
-
-sub from_method {
-    my $class = shift;
-    my ($obj, $meth, $wrap) = @_;
-    $wrap ||= "";
-
-    croak "A blessed object is required as the first argument"
-        unless $obj && blessed($obj);
-
-    # 0, ' ', and undef are not valid method names, truth check is good enough.
-    croak "A method name, or coderef is required as the second argument"
-        unless $meth;
-
-    my ($ok, $err, @out);
-    {
-        local ($@, $!, $?);
-        if ($wrap) {
-            # List context due to wrapping
-            $ok = eval { @out = $obj->$meth; 1 };
-        }
-        else {
-            # Scalar context, in case of wantarray
-            $ok = eval { $out[0] = $obj->$meth; 1 };
-        }
-        $err = $@ unless $ok;
-    }
-
-    return bless(
-        {
-            EXISTS()    => 0,
-            DEFINED()   => 0,
-            EXCEPTION() => $err || "Unknown error",
-        },
-        $class
-    ) unless $ok;
-
-    return $class->from_return(\@out)
-        if $wrap eq '@';
-
-    return $class->from_return({@out})
-        if $wrap eq '%';
-
-    return $class->from_return(@out);
-}
-
-
-{
-    no warnings 'redefine';
-
-    sub value {
-        my $self = shift;
-        return unless $self->{+EXISTS};
-        return $self->{+VALUE};
-    }
-}
-
-sub lines {
-    my $self = shift;
-
-    return unless $self->{+EXISTS};
-    return unless $self->{+DEFINED};
-
-    return $self->{+VALUE}->structure_verify_lines
-        if blessed($self->{+VALUE})
-        && $self->{+VALUE}->can('structure_verify_lines');
-
-    return;
-}
 
 sub cell {
     my $self = shift;
@@ -336,23 +304,15 @@ sub cell {
 
     my $value = $self->value;
 
-    if (ref($value)) {
-        my $refa = render_ref($value);
-        my $refb = "$value";
-
-        my $val_string = $refa;
-        $val_string .= "\n$refb" if $refa ne $refb;
-
-        return Term::Table::Cell->new(
-            value        => $val_string,
-            border_left  => '>',
-            border_right => '<',
-        );
-    }
-
     return Term::Table::Cell->new(
         value => "$value",
-    );
+        $self->{+META} ? (
+            border_left  => '>',
+            border_right => '<',
+        ) : (),
+    ) unless ref($value);
+
+    return ref_cell($value);
 }
 
-1;
+

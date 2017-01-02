@@ -11,6 +11,7 @@ use Scalar::Util qw/refaddr/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
 sub BUILD_ALIAS { 'exact_ref' }
+sub SHOW_ADDRESS { 1 }
 
 sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
 

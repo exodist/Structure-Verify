@@ -47,7 +47,7 @@ sub cell {
     return Term::Table::Cell->new(value => "$value")
         unless ref $value;
 
-    return ref_cell($value);
+    return ref_cell($value, $self->SHOW_ADDRESS);
 }
 
 1;

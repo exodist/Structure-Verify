@@ -45,12 +45,13 @@ sub render_ref {
 
 sub ref_cell {
     my $input = shift;
+    my ($addr) = @_;
 
     my $type = rtype($input) or return;
 
     my $refa = $type eq 'REGEXP' ? "$input" : render_ref($input);
     my $refb = "$input";
-    my $refc = $type eq 'REGEXP' ? "$input" : render_ref($input, 1);
+    my $refc = $type eq 'REGEXP' ? "$input" : render_ref($input, !$addr);
 
     my @cells;
 
