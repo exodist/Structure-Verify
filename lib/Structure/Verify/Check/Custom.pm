@@ -10,8 +10,6 @@ use Structure::Verify::Util::Ref qw/rtype/;
 use Sub::Info qw/sub_info/;
 use Carp qw/croak/;
 
-sub BUILD_ALIAS { 'custom' }
-
 sub init {
     my $self = shift;
 

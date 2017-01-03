@@ -1,8 +1,8 @@
-package Structure::Verify::Check::Container::Array;
+package Structure::Verify::Check::Array;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check::Container';
+use parent 'Structure::Verify::Check';
 
 use Structure::Verify::HashBase qw/-components -idx bounded/;
 
@@ -12,8 +12,6 @@ use List::Util qw/max/;
 use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
 use Term::Table::Cell;
-
-sub BUILD_ALIAS { 'array' }
 
 sub operator { 'IS' }
 

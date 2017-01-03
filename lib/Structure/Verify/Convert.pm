@@ -7,21 +7,20 @@ use Structure::Verify::ProtoCheck();
 
 use Structure::Verify::Check::Bag();
 use Structure::Verify::Check::Boundary();
-use Structure::Verify::Check::Compound();
 use Structure::Verify::Check::Custom();
 use Structure::Verify::Check::Truthy();
 
-use Structure::Verify::Check::Container::Array();
-use Structure::Verify::Check::Container::Hash();
-use Structure::Verify::Check::Container::Object();
-use Structure::Verify::Check::Container::Ref();
+use Structure::Verify::Check::Array();
+use Structure::Verify::Check::Hash();
+use Structure::Verify::Check::Object();
+use Structure::Verify::Check::Ref();
 
-use Structure::Verify::Check::Value::Number();
-use Structure::Verify::Check::Value::Pattern();
-use Structure::Verify::Check::Value::Ref();
-use Structure::Verify::Check::Value::Regex();
-use Structure::Verify::Check::Value::String();
-use Structure::Verify::Check::Value::VString();
+use Structure::Verify::Check::Number();
+use Structure::Verify::Check::Pattern();
+use Structure::Verify::Check::ExactRef();
+use Structure::Verify::Check::Regex();
+use Structure::Verify::Check::String();
+use Structure::Verify::Check::VString();
 
 use Scalar::Util qw/blessed/;
 use Structure::Verify::Util::Ref qw/rtype/;
@@ -92,29 +91,29 @@ sub convert {
     };
 
     # Non-refs are just treated as strings
-    return $build->('Structure::Verify::Check::Value::String', 0)
+    return $build->('Structure::Verify::Check::String', 0)
         unless $type;
 
     # If a blessed object is passed in we will check that we get the exact object.
-    return $build->('Structure::Verify::Check::Value::Ref', 0)
+    return $build->('Structure::Verify::Check::ExactRef', 0)
         if $blessed && $blessed ne 'Regexp';
 
-    return $build->('Structure::Verify::Check::Container::Array', 1)
+    return $build->('Structure::Verify::Check::Array', 1)
         if $type eq 'ARRAY';
 
-    return $build->('Structure::Verify::Check::Container::Hash', 1)
+    return $build->('Structure::Verify::Check::Hash', 1)
         if $type eq 'HASH';
 
-    return $build->('Structure::Verify::Check::Container::Ref', 1)
+    return $build->('Structure::Verify::Check::Ref', 1)
         if $type eq 'SCALAR' || $type eq 'REF';
 
-    return $build->('Structure::Verify::Check::Value::Pattern', 0)
+    return $build->('Structure::Verify::Check::Pattern', 0)
         if $type eq 'REGEXP' && $params->{use_regex};
 
     return $build->('Structure::Verify::Check::Custom', 0)
         if $type eq 'CODE' && $params->{use_code};
 
-    return $build->('Structure::Verify::Check::Value::Ref', 0);
+    return $build->('Structure::Verify::Check::ExactRef', 0);
 }
 
 1;

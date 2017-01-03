@@ -4,7 +4,7 @@ use warnings;
 
 use Structure::Verify::Got;
 use Structure::Verify qw/build/;
-use Structure::Verify::Check::Value::String;
+use Structure::Verify::Check::String;
 
 my $CLASS = 'Structure::Verify::Got';
 

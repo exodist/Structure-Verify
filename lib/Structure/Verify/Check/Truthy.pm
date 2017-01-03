@@ -13,8 +13,6 @@ use Term::Table::Cell;
 my @ORDER = ( +TRUE, +FALSE, +DEFINED, +UNDEFINED, +EXISTS, +NON_EXISTANT );
 my %ALLOW = map { $_ => $_ } @ORDER;
 
-sub BUILD_ALIAS { 'truthy' }
-
 sub operator { 'IN' }
 
 sub from_string {

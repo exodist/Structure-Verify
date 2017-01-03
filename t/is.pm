@@ -9,7 +9,6 @@ use Structure::Verify::Convert qw/relaxed_convert basic_convert/;
 use Carp qw/croak/;
 
 use Structure::Verify ':ALL';
-use Structure::Verify::Autoload;
 use Structure::Verify::Builders(
     qw{ hash array object bag },
 );

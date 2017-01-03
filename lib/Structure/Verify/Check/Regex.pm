@@ -1,15 +1,13 @@
-package Structure::Verify::Check::Value::Regex;
+package Structure::Verify::Check::Regex;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check::Value';
-use Structure::Verify::HashBase;
+use parent 'Structure::Verify::Check';
+use Structure::Verify::HashBase qw/-value/;
 use Structure::Verify::Behaviors::Negatable;
 
 use Carp qw/croak/;
 use Structure::Verify::Util::Ref qw/rtype/;
-
-sub BUILD_ALIAS { 'regex' }
 
 sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
 
@@ -27,7 +25,6 @@ sub verify {
     my $self = shift;
     my ($got) = @_;
 
-    return 0 unless $self->SUPER::verify(@_);
     return 0 unless $got->exists;
     return 0 unless $got->defined;
 

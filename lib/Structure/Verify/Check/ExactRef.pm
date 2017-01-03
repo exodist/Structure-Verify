@@ -1,16 +1,15 @@
-package Structure::Verify::Check::Value::Ref;
+package Structure::Verify::Check::ExactRef;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check::Value';
-use Structure::Verify::HashBase;
+use parent 'Structure::Verify::Check';
+use Structure::Verify::HashBase qw/-value/;
 use Structure::Verify::Behaviors::Negatable;
 
 use Carp qw/croak/;
 use Scalar::Util qw/refaddr/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
-sub BUILD_ALIAS { 'exact_ref' }
 sub SHOW_ADDRESS { 1 }
 
 sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
@@ -39,7 +38,6 @@ sub verify {
     my $self = shift;
     my ($got) = @_;
 
-    return 0 unless $self->SUPER::verify(@_);
     return 0 unless $got->exists;
     return 0 unless $got->defined;
     return 0 unless ref($got->value);

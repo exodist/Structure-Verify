@@ -1,8 +1,8 @@
-package Structure::Verify::Check::Container::Hash;
+package Structure::Verify::Check::Hash;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check::Container';
+use parent 'Structure::Verify::Check';
 
 use Structure::Verify::HashBase qw/-components bounded/;
 
@@ -12,8 +12,6 @@ use Structure::Verify::Util::Ref qw/rtype/;
 use Structure::Verify::Got;
 use Structure::Verify::Check::Boundary;
 use Term::Table::Cell;
-
-sub BUILD_ALIAS { 'hash' }
 
 sub operator { 'IS' }
 

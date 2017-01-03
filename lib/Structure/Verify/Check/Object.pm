@@ -1,8 +1,8 @@
-package Structure::Verify::Check::Container::Object;
+package Structure::Verify::Check::Object;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check::Container';
+use parent 'Structure::Verify::Check';
 
 use Structure::Verify::HashBase qw/-methods -type -subtypes/;
 
@@ -13,8 +13,6 @@ use Carp qw/croak/;
 use Structure::Verify::Check::SubType;
 use Structure::Verify::Got;
 use Term::Table::Cell;
-
-sub BUILD_ALIAS { 'object' }
 
 sub operator { 'BLESSED' }
 

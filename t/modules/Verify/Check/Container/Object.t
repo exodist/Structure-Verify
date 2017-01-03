@@ -3,9 +3,9 @@ use strict;
 use warnings;
 
 use Structure::Verify ':ALL';
-use Structure::Verify::Autoload;
 use Structure::Verify::Builders qw/ object /;
 use Structure::Verify::Convert qw/ basic_convert /;
+
 
 {
     package Bar;

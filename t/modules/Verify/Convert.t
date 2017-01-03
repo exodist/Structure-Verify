@@ -68,25 +68,25 @@ sub convert {
         return ($new, $new_state);
     };
 
-    return $build->('Structure::Verify::Check::Value::String', 0)
+    return $build->('Structure::Verify::Check::String', 0)
         unless $type;
 
-    return $build->('Structure::Verify::Check::Container::Array', 1)
+    return $build->('Structure::Verify::Check::Array', 1)
         if $type eq 'ARRAY';
 
-    return $build->('Structure::Verify::Check::Container::Hash', 1)
+    return $build->('Structure::Verify::Check::Hash', 1)
         if $type eq 'HASH';
 
-    return $build->('Structure::Verify::Check::Container::Ref', 1)
+    return $build->('Structure::Verify::Check::Ref', 1)
         if $type eq 'SCALAR' || $type eq 'REF';
 
-    return $build->('Structure::Verify::Check::Value::Pattern', 0)
+    return $build->('Structure::Verify::Check::Pattern', 0)
         if $type eq 'REGEXP' && $params->{use_regex};
 
     return $build->('Structure::Verify::Check::Custom', 0)
         if $type eq 'CODE' && $params->{use_code};
 
-    return $build->('Structure::Verify::Check::Value::Ref', 0);
+    return $build->('Structure::Verify::Check::Ref', 0);
 }
 
 1;

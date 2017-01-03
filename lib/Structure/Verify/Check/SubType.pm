@@ -10,8 +10,6 @@ use Carp qw/croak/;
 use Scalar::Util qw/blessed/;
 use Structure::Verify::Util::Ref qw/render_ref/;
 
-sub BUILD_ALIAS { 'subtype' }
-
 sub operator { 'ISA' }
 
 sub init {

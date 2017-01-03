@@ -4,27 +4,14 @@ use warnings;
 
 use Carp qw/croak carp/;
 use Scalar::Util qw/blessed/;
-use Structure::Verify::Util::Ref qw/rtype/;
+use Structure::Verify::Util::Ref qw/rtype ref_cell/;
 
 use Structure::Verify::HashBase qw/-_lines -file -via_build/;
 
 use Term::Table::Cell;
 use Structure::Verify::Meta;
 
-sub BUILD_ALIAS { }
-
 sub SHOW_ADDRESS { 0 }
-
-sub import {
-    my $class = shift;
-    my @aliases = @_;
-
-    @aliases = $class->BUILD_ALIAS unless @aliases;
-    return unless @aliases;
-
-    my $meta = Structure::Verify::Meta->new(scalar caller);
-    $meta->add_alias($_, $class) for @aliases;
-}
 
 sub init {
     my $self = shift;
@@ -61,8 +48,13 @@ sub build {
     my $self = shift;
     my ($with, $alias) = @_;
 
+    my $type = rtype($with);
+
     return $with->($self, $alias)
-        if rtype($with) eq 'CODE';
+        if $type eq 'CODE';
+
+    return $self->{$self->VALUE} = $with
+        if $self->can('value') && (!$type || $type eq 'REGEXP');
 
     my $class = blessed($self);
     croak "'$class' does not know how to build with '$with'"
@@ -91,7 +83,21 @@ sub cell {
         value        => 'CHECK',
         border_left  => '>',
         border_right => '<',
-    );
+    ) unless $self->can('value');
+
+    my $value = $self->value;
+
+    return Term::Table::Cell->new(
+        value        => 'NOT DEFINED',
+        border_left  => '>',
+        border_right => '<',
+    ) unless defined $value;
+
+    return Term::Table::Cell->new(value => "$value")
+        unless ref $value;
+
+    return ref_cell($value, $self->SHOW_ADDRESS);
 }
+
 
 1;

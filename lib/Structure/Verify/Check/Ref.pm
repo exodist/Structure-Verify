@@ -1,8 +1,8 @@
-package Structure::Verify::Check::Container::Ref;
+package Structure::Verify::Check::Ref;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check::Container';
+use parent 'Structure::Verify::Check';
 
 use Structure::Verify::HashBase qw/-type -subcheck/;
 
@@ -11,8 +11,6 @@ use Carp qw/croak/;
 
 use Structure::Verify::Got;
 use Term::Table::Cell;
-
-sub BUILD_ALIAS { 'ref' }
 
 sub operator { 'IS' }
 

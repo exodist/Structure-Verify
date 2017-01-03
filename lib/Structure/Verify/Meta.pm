@@ -6,7 +6,7 @@ use Carp qw/croak carp/;
 
 sub new;
 
-use Structure::Verify::HashBase qw/-package -build_map -builds use_autoload/;
+use Structure::Verify::HashBase qw/-package -builds/;
 
 sub new {
     my $class = shift;
@@ -17,7 +17,6 @@ sub new {
 
     my $self = bless(
         {
-            BUILD_MAP() => {},
             PACKAGE() => $pkg,
             BUILDS() => [],
         },
@@ -38,31 +37,6 @@ sub current_build {
 
     return unless @$builds;
     return $builds->[-1];
-}
-
-sub add_alias {
-    my $self = shift;
-    my ($alias, $mod) = @_;
-
-    if (my $m = $self->{+BUILD_MAP}->{$alias}) {
-        carp "check short name '$alias' was set to '$m' but is being reset to '$mod'"
-            unless $mod eq $m;
-    }
-
-    $self->{+BUILD_MAP}->{$alias} = $mod;
-}
-
-sub find_build {
-    my $self = shift;
-    my ($alias) = @_;
-
-    return $self->{+BUILD_MAP}->{$alias}
-        if $self->{+BUILD_MAP}->{$alias};
-
-    return unless $self->{+USE_AUTOLOAD};
-
-    require Structure::Verify::Autoload;
-    return Structure::Verify::Autoload->find($alias);
 }
 
 1;

@@ -12,35 +12,11 @@ ok(__PACKAGE__->can($_), "imported $_") for qw{
     check checks check_pair end etc
 };
 
-use Structure::Verify::Check::Container::Hash;
-use Structure::Verify::Check::Container::Array;
-use Structure::Verify::Check::Value::String;
-
-use Structure::Verify::Check::Container::Hash qw/foo/;
-use Structure::Verify::Check::Container::Array qw/bar/;
-use Structure::Verify::Check::Value::String qw/baz/;
-
+ok(!current_build, "no current build");
 ok(my $meta = __PACKAGE__->STRUCTURE_VERIFY, "Got meta");
 
-is_deeply(
-    $meta->build_map,
-    {
-        hash => 'Structure::Verify::Check::Container::Hash',
-        foo  => 'Structure::Verify::Check::Container::Hash',
-
-        array => 'Structure::Verify::Check::Container::Array',
-        bar   => 'Structure::Verify::Check::Container::Array',
-
-        string => 'Structure::Verify::Check::Value::String',
-        baz    => 'Structure::Verify::Check::Value::String',
-    },
-    "Set up our build map"
-);
-
-ok(!current_build, "no current build");
-
 build hash => sub {
-    ok(current_build->isa('Structure::Verify::Check::Container::Hash'), "Got the current build");
+    ok(current_build->isa('Structure::Verify::Check::Hash'), "Got the current build");
 };
 
 my $h = build hash => sub {
@@ -56,13 +32,13 @@ like(exception { checks ['aaa'] }, qr/No current build/, "Cannot use checks() wi
 build 'string' => sub {
     like(
         exception { check 'aaa' },
-        qr/Check 'Structure::Verify::Check::Value::String' does not support subchecks/,
+        qr/Check 'Structure::Verify::Check::String' does not support subchecks/,
         "build must support subchecks to be built with checks"
     );
 };
 
 {
-    package MyCheck;
+    package Structure::Verify::Check::MyCheck;
     use parent 'Structure::Verify::Check';
 
     our @PREV_ARGS;
@@ -77,26 +53,24 @@ build 'string' => sub {
     }
 }
 
-$meta->build_map->{'cc'} = 'MyCheck';
-
-build cc => sub {
+build my_check => sub {
     check 'aaa';
-    is_deeply(\@MyCheck::ARGS, [{raw => 'aaa', file => __FILE__, lines => [__LINE__ - 1]}], "1 arg, 1 arg");
+    is_deeply(\@Structure::Verify::Check::MyCheck::ARGS, [{raw => 'aaa', file => __FILE__, lines => [__LINE__ - 1]}], "1 arg, 1 arg");
     check a => 1;
-    is_deeply(\@MyCheck::ARGS, [a => {raw => 1, file => __FILE__, lines => [__LINE__ - 1]}], "2 args, 2 args");
+    is_deeply(\@Structure::Verify::Check::MyCheck::ARGS, [a => {raw => 1, file => __FILE__, lines => [__LINE__ - 1]}], "2 args, 2 args");
 
     checks ['a', 'b'];
-    is_deeply(\@MyCheck::ARGS, [{raw => 'b', file => __FILE__, lines => [__LINE__ - 1]}], "added the check");
+    is_deeply(\@Structure::Verify::Check::MyCheck::ARGS, [{raw => 'b', file => __FILE__, lines => [__LINE__ - 1]}], "added the check");
 
     checks {'a' => 'b'};
-    is_deeply(\@MyCheck::ARGS, ['a', {raw => 'b', file => __FILE__, lines => [__LINE__ - 1]}], "added the check with ids");
+    is_deeply(\@Structure::Verify::Check::MyCheck::ARGS, ['a', {raw => 'b', file => __FILE__, lines => [__LINE__ - 1]}], "added the check with ids");
 
     my $line = __LINE__ + 1;
     check_pair foo => 'bar';
     is_deeply(
         [
-            @MyCheck::PREV_ARGS,
-            @MyCheck::ARGS,
+            @Structure::Verify::Check::MyCheck::PREV_ARGS,
+            @Structure::Verify::Check::MyCheck::ARGS,
         ],
         [
             {raw => 'foo', file => __FILE__, lines => [$line]},
@@ -107,13 +81,13 @@ build cc => sub {
 
     like(
         exception { end },
-        qr/Current build 'MyCheck' cannot be bounded/,
+        qr/Current build 'Structure::Verify::Check::MyCheck' cannot be bounded/,
         "Cannot use end here"
     );
 
     like(
         exception { etc },
-        qr/Current build 'MyCheck' cannot be bounded/,
+        qr/Current build 'Structure::Verify::Check::MyCheck' cannot be bounded/,
         "Cannot use etc here"
     );
 };

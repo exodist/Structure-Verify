@@ -5,7 +5,6 @@ use warnings;
 use Test2::API qw/context/;
 
 use Structure::Verify ':ALL';
-use Structure::Verify::Autoload;
 use Structure::Verify::Builders(
     qw{ hash array object },
     hash => {-as => 'hoot'},
@@ -18,7 +17,7 @@ my $convert = sub {
     my ($in, $state) = @_;
 
     return ($in, $state) if $in->isa('Structure::Verify::Check');
-    my $new = Structure::Verify::Check::Value::String->new(
+    my $new = Structure::Verify::Check::String->new(
         value => $in->raw,
         file  => $in->file,
         lines => $in->lines,
@@ -89,28 +88,28 @@ is_deeply(
         '+--------+---------+----+-----------------+--------+',
         '| PATH   | GOT     | OP | CHECK           | LINES  |',
         '+--------+---------+----+-----------------+--------+',
-        '| {a}[0] | 1       | == | 2               | 64     |',
-        '| {a}[1] | 2       |    |> OUT OF BOUNDS <| 63, 66 |',
+        '| {a}[0] | 1       | == | 2               | 63     |',
+        '| {a}[1] | 2       |    |> OUT OF BOUNDS <| 62, 65 |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | eq | flub            | 68     |',
+        '| {b}    | foo\n   | eq | flub            | 67     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | eq | foox            | 69     |',
+        '| {b}    | foo\n   | eq | foox            | 68     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 70     |',
+        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 69     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 71     |',
+        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 70     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {c}    | bar     | eq | bub             | 73     |',
-        '| {c}    | bar     | eq | barx            | 74     |',
-        '| {c}    | bar     | ne | bar             | 75     |',
-        '| {c}    | bar     | =~ |> (?^:barx)     <| 76     |',
-        '| {c}    | bar     | !~ |> (?^:bar)      <| 77     |',
-        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 65, 80 |',
-        '| {d}    | x       |    |> OUT OF BOUNDS <| 65, 80 |',
+        '| {c}    | bar     | eq | bub             | 72     |',
+        '| {c}    | bar     | eq | barx            | 73     |',
+        '| {c}    | bar     | ne | bar             | 74     |',
+        '| {c}    | bar     | =~ |> (?^:barx)     <| 75     |',
+        '| {c}    | bar     | !~ |> (?^:bar)      <| 76     |',
+        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 64, 79 |',
+        '| {d}    | x       |    |> OUT OF BOUNDS <| 64, 79 |',
         '+--------+---------+----+-----------------+--------+',
     ],
     "Got useful table"

@@ -45,11 +45,21 @@ sub _build {
         $class = $1;
     }
     else {
-        $class = $meta->find_build($make);
+        $class = 'Structure::Verify::Check::' . join '' => map { ucfirst(lc($_)) } split /_/, $make;
+    }
+
+    my $cfile = $class;
+    $cfile =~ s{::}{/}g;
+    $cfile .= '.pm';
+
+    my $found;
+    {
+        local ($@, $?, $!);
+        $found = $INC{$cfile} || eval { require $cfile; 1 } || $class->isa('Structure::Verify::Check');
     }
 
     croak "Not sure how to build a '$make'"
-        unless $class;
+        unless $class && $found;
 
     my ($file, $lines);
     if (rtype($with) eq 'CODE') {

@@ -15,8 +15,6 @@ use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
-sub BUILD_ALIAS { 'bag' }
-
 sub operator { 'IS' }
 
 sub init {
