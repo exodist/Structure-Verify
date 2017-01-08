@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '0.001';
 
-use Scalar::Util qw/reftype blessed refaddr/;
+use Scalar::Util qw/reftype blessed refaddr isvstring/;
 use Carp qw/croak/;
 
 use Term::Table::Cell;
@@ -16,6 +16,8 @@ our @EXPORT_OK = qw/rtype render_ref ref_cell/;
 sub rtype {
     my ($thing) = @_;
     return '' unless defined $thing;
+
+    return 'VSTRING' if isvstring($thing);
 
     my $rf = ref $thing;
     my $rt = reftype $thing;

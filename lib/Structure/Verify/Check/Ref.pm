@@ -12,6 +12,11 @@ use Carp qw/croak/;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
+my %SUBCHECK = (
+    SCALAR => 1,
+    REF    => 1,
+);
+
 sub operator { 'IS' }
 
 sub cell {
@@ -31,8 +36,11 @@ sub build {
     return $self->{+TYPE} = $with
         unless $rtype;
 
-    $self->{+TYPE} = 'subcheck'
-        if $rtype eq 'CODE';
+    if ($SUBCHECK{$rtype}) {
+        $self->{+TYPE} = 'subcheck';
+        $self->{+SUBCHECK} = $$with;
+        return;
+    }
 
     return $self->SUPER::build(@_);
 }
@@ -49,11 +57,6 @@ sub init {
     croak "Type '$type' is not allowed to have subchecks"
         if $self->{+SUBCHECK} && $type !~ m/^(SCALAR|REF)$/;
 }
-
-my %SUBCHECK = (
-    SCALAR => 1,
-    REF    => 1,
-);
 
 sub verify {
     my $self = shift;

@@ -8,6 +8,7 @@ use Structure::Verify::Behaviors::Negatable;
 
 use Carp qw/croak/;
 use Scalar::Util qw/isvstring/;
+use Structure::Verify::Util::Ref qw/rtype/;
 
 sub operator { $_[0]->negate ? 'ne' : 'eq' }
 
@@ -32,5 +33,18 @@ sub verify {
     my ($pass, $fail) = $self->negate ? (0, 1) : (1, 0);
     return $got->value eq $self->value ? $pass : $fail;
 }
+
+sub build {
+    my $self = shift;
+    my ($with, $alias) = @_;
+
+    my $type = rtype($with);
+
+    return $self->{$self->VALUE} = $with
+        if $type eq 'VSTRING';
+
+    $self->SUPER::build(@_);
+}
+
 
 1;

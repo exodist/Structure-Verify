@@ -22,7 +22,7 @@ use Structure::Verify::Check::Regex();
 use Structure::Verify::Check::String();
 use Structure::Verify::Check::VString();
 
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed isvstring/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
 use Importer Importer => 'import';
@@ -38,13 +38,13 @@ sub convert {
     my ($file, $lines);
     if (blessed($in)) {
         if ($in->isa('Structure::Verify::Check')) {
-            return $in unless $params->{implicit_end};
-            return $in unless $in->can('set_bounded');
-            return $in if defined $in->bounded;
+            return ($in, $state) unless $params->{implicit_end};
+            return ($in, $state) unless $in->can('set_bounded');
+            return ($in, $state) if defined $in->bounded;
 
             my $clone = $in->clone;
-            $clone->set_bounded(1);
-            return $clone;
+            $clone->set_bounded('implicit');
+            return ($clone, $state);
         }
 
         if ($in->isa('Structure::Verify::ProtoCheck')) {
@@ -112,6 +112,9 @@ sub convert {
 
     return $build->('Structure::Verify::Check::Custom', 0)
         if $type eq 'CODE' && $params->{use_code};
+
+    return $build->('Structure::Verify::Check::VString', 1)
+        if $type eq 'VSTRING';
 
     return $build->('Structure::Verify::Check::ExactRef', 0);
 }

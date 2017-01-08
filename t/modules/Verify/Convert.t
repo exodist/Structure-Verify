@@ -2,91 +2,101 @@ use strict;
 use warnings;
 BEGIN { require 't/is.pm'; is->import }
 
+use Structure::Verify::ProtoCheck;
+
 my $CLASS = 'Structure::Verify::Convert';
 
 use Structure::Verify::Convert ':ALL';
 ok(__PACKAGE__->can($_), "imported $_") for qw/convert basic_convert relaxed_convert strict_convert/;
 
-done_testing;
-
-__END__
-
-sub convert {
-    my ($in, $state, $params) = @_;
-
-    my ($file, $lines);
-    if (blessed($in)) {
-        if ($in->isa('Structure::Verify::Check')) {
-            return $in unless $params->{implicit_end};
-            return $in unless $in->can('set_bounded');
-            return $in if defined $in->bounded;
-
-            my $clone = $in->clone;
-            $clone->set_bounded(1);
-            return $clone;
-        }
-
-        if ($in->isa('Structure::Verify::ProtoCheck')) {
-            $file  = $in->file;
-            $lines = $in->lines;
-            $in    = $in->raw;
-        }
-    }
-
-    my %args = (via_build => 1);
-    $args{lines} = $lines if $lines;
-    $args{file}  = $file  if $file;
-
-    my $type = rtype($in);
-
-    my $build = sub {
-        my ($type, $manage_state) = @_;
-
-        my $new = $type->new(%args);
-        my $new_state = $state;
-        my $build = 1;
-
-        # If we find recursion we do not build it, instead we make it a
-        # boundless type check with no subchecks.
-        if ($manage_state) {
-            if ($state->{$in}) {
-                $build = 0;
-                $new->set_bounded(0) if $new->can('set_bounded');
-            }
-            else {
-                $new_state = {%$state, $in => 1};
-            }
-        }
-
-        if ($build) {
-            $new->build($in);
-
-            $new->set_bounded($params->{implicit_end} ? 1 : 0)
-                if $new->can('set_bounded');
-        }
-
-        return ($new, $new_state);
+tests convert_from_check => sub {
+    my $state = {};
+    my $array = array {
+        check 0 => 'a';
+        check 1 => 'b';
+        check 'c';
     };
 
-    return $build->('Structure::Verify::Check::String', 0)
-        unless $type;
+    my ($got, $gs) = convert($array, $state, {});
+    ok($got == $array, "Passed through as-is");
+    ok($gs == $state, "State is not modified");
 
-    return $build->('Structure::Verify::Check::Array', 1)
-        if $type eq 'ARRAY';
+    ($got, $gs) = convert($array, $state, {implicit_end => 1});
+    ok($got != $array, "Did not get original");
+    ok($gs == $state, "State is not modified");
+    is_deeply(
+        { %$array, bounded => 'implicit' },
+        { %$got },
+        "Cloned, but now bounded is set to true"
+    );
 
-    return $build->('Structure::Verify::Check::Hash', 1)
-        if $type eq 'HASH';
+    $array->set_bounded(0);
+    ($got, $gs) = convert($array, $state, {implicit_end => 1});
+    ok($got == $array, "Passed through as-is, bound is already defined");
+    ok($gs == $state, "State is not modified");
+};
 
-    return $build->('Structure::Verify::Check::Ref', 1)
-        if $type eq 'SCALAR' || $type eq 'REF';
+tests convert_from_protocheck => sub {
+    my $state = {};
+    my $proto = Structure::Verify::ProtoCheck->new(
+        file => 'foo.t',
+        lines => [1, 3],
+        raw => 'apple',
+    );
 
-    return $build->('Structure::Verify::Check::Pattern', 0)
-        if $type eq 'REGEXP' && $params->{use_regex};
+    my ($got, $gs) = convert($proto, $state, {});
+    ok($got->isa('Structure::Verify::Check::String'), "Converted to check");
+    is($got->file, 'foo.t', "got the file");
+    is([$got->lines], [1, 3], "Got the lines");
+    is($got->value, 'apple', "Value carried over");
+};
 
-    return $build->('Structure::Verify::Check::Custom', 0)
-        if $type eq 'CODE' && $params->{use_code};
+tests no_params => sub {
+    my ($check) = convert(1, {}, {});
+    ok($check->isa('Structure::Verify::Check::String'), "Numbers are strings");
 
-    return $build->('Structure::Verify::Check::Ref', 0);
-}
+    ($check) = convert("abc", {}, {});
+    ok($check->isa('Structure::Verify::Check::String'), "Strings are strings");
 
-1;
+    ($check) = convert(qr/xxx/, {}, {});
+    ok($check->isa('Structure::Verify::Check::ExactRef'), "Exact ref for regex");
+
+    ($check) = convert(v1.2.3, {}, {});
+    ok($check->isa('Structure::Verify::Check::VString'), "VString type");
+
+    ($check) = convert({}, {}, {});
+    ok($check->isa('Structure::Verify::Check::Hash'), "Made a hash");
+    is($check->bounded, 0, "Not bounded");
+
+    ($check) = convert([], {}, {});
+    ok($check->isa('Structure::Verify::Check::Array'), "Made a array");
+    is($check->bounded, 0, "Not bounded");
+
+    ($check) = convert(\"x", {}, {});
+    ok($check->isa('Structure::Verify::Check::Ref'), "Made a ref");
+
+    ($check) = convert(sub { 1 }, {}, {});
+    ok($check->isa('Structure::Verify::Check::ExactRef'), "Made an exactref");
+};
+
+tests implicit_end => sub {
+    my ($check) = convert({}, {}, {implicit_end => 1});
+    ok($check->isa('Structure::Verify::Check::Hash'), "Made a hash");
+    is($check->bounded, 1, "Not bounded");
+
+    ($check) = convert([], {}, {implicit_end => 1});
+    ok($check->isa('Structure::Verify::Check::Array'), "Made a array");
+    is($check->bounded, 1, "Not bounded");
+};
+
+tests use_regex => sub {
+    my ($check) = convert(qr/xxx/, {}, {use_regex => 1});
+    ok($check->isa('Structure::Verify::Check::Pattern'), "Use Regex as pattern");
+};
+
+tests use_code => sub {
+    my ($check) = convert(sub { 1 }, {}, {use_code => 1});
+    ok($check->isa('Structure::Verify::Check::Custom'), "Use sub as custom");
+};
+
+done_testing;

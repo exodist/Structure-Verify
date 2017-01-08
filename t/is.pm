@@ -16,7 +16,7 @@ use Structure::Verify::Builders(
 our @EXPORT = qw{
     ok is isnt like unlike diag note skip_all todo plan done_testing warnings
     exception tests capture hash array object bag check checks check_pair end
-    etc
+    etc is_deeply
 };
 
 sub import {
