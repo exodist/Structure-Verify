@@ -178,7 +178,7 @@ sub run_checks {
     my $in_path  = $params{path} || '';
     my $in_state = $params{state} || {};
 
-    my @todo  = ([$in_path || '', $want, Structure::Verify::Got->from_return($in), $in_state]);
+    my @todo  = ([$in_path || '', $want, Structure::Verify::Got->from_verify_input($in), $in_state]);
     my $delta = Structure::Verify::Delta->new();
     my $pass  = 1;
 

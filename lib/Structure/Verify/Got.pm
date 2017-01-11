@@ -11,6 +11,15 @@ use Carp qw/croak/;
 
 use Structure::Verify::HashBase qw/-exists -value -defined -exception -meta/;
 
+sub from_verify_input {
+    my $class = shift;
+    my ($in) = @_;
+
+    return $in if blessed($in) && $in->isa(__PACKAGE__);
+
+    return $class->from_return(@_);
+}
+
 sub from_return {
     my $class = shift;
 

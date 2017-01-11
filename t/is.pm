@@ -4,7 +4,7 @@ use warnings;
 
 use Test2::Tools::Tiny;
 
-use Test2::API qw/context/;
+use Test2::API qw/context intercept/;
 use Structure::Verify::Convert qw/relaxed_convert basic_convert/;
 use Carp qw/croak/;
 
@@ -16,8 +16,12 @@ use Structure::Verify::Builders(
 our @EXPORT = qw{
     ok is isnt like unlike diag note skip_all todo plan done_testing warnings
     exception tests capture hash array object bag check checks check_pair end
-    etc is_deeply
+    etc is_deeply intercept last_delta
 };
+
+my $DELTA;
+
+sub last_delta { $DELTA }
 
 sub import {
     my $class = shift;
@@ -39,16 +43,18 @@ no warnings qw/prototype redefine/;
 sub is($$;$) {
     my ($ok, $delta) = run_checks($_[0], $_[1], convert => \&basic_convert);
     my $ctx = context;
-    ok($ok, $_[2]) || diag map {"$_\n"} $delta->term_table->render;
+    ok($ok, $_[2]) || diag join "\n" => $delta->term_table->render;
     $ctx->release;
+    $DELTA = $delta;
     return $ok;
 }
 
 sub like($$;$) {
     my ($ok, $delta) = run_checks($_[0], $_[1], convert => \&relaxed_convert);
     my $ctx = context;
-    ok($ok, $_[2]) || diag map {"$_\n"} $delta->term_table->render;
+    ok($ok, $_[2]) || diag join "\n" => $delta->term_table->render;
     $ctx->release;
+    $DELTA = $delta;
     return $ok;
 }
 

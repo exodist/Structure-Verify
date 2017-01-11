@@ -30,8 +30,10 @@ sub build {
 sub cell {
     my $self = shift;
 
-    return Term::Table::CellStack->new(
-        cells => [map { $_->cell(@_) } @{$self->{+CHILDREN}}],
+    return Term::Table::Cell->new(
+        value        => "...",
+        border_left  => '>',
+        border_right => '<',
     );
 }
 
@@ -39,18 +41,23 @@ sub complex_check {
     my $self   = shift;
     my %params = @_;
 
-    my $got   = $params{got};
-    my $delta = $params{delta};
+    my $got     = $params{got};
+    my $delta   = $params{delta};
+    my $convert = $params{convert};
+    my $state   = $params{state};
+    my $matched = 0;
 
-    my %matched;
+    my @checks;
     for my $check (@{$self->{+CHILDREN}}) {
-        my ($ok) = run_checks($got, $check, %params);
-        $matched{$check} = $ok;
+        my ($c, $s) = $convert ? $convert->($check, $state) : ($check, $state);
+        my ($ok) = run_checks($got, $c, %params, state => $s);
+        push @checks => ($c, $ok ? '*' : ' ');
+        $matched++ if $ok;
     }
 
-    return 1 unless keys %matched;
+    return 1 unless $matched;
 
-    $delta->add($params{path}, $_, $got, $matched{$_} ? ('*' => '*') : ()) for @{$self->{+CHILDREN}};
+    $delta->add($params{path}, [$self => ' ', @checks], $got);
 
     return 0;
 }

@@ -6,11 +6,12 @@ use parent 'Structure::Verify::Check';
 use Structure::Verify::HashBase qw/-children/;
 
 use Carp qw/croak/;
+use Scalar::Util qw/blessed/;
 use Structure::Verify qw/run_checks/;
-use Structure::Verify::Util::Ref qw/rtype/;
+use Structure::Verify::Util::Ref qw/rtype ref_cell/;
 
 use Structure::Verify::Got;
-use Term::Table::CellStack;
+use Term::Table::Cell;
 
 sub operator { 'ANY' }
 sub verify { 1 }
@@ -30,8 +31,10 @@ sub build {
 sub cell {
     my $self = shift;
 
-    return Term::Table::CellStack->new(
-        cells => [map { $_->cell(@_) } @{$self->{+CHILDREN}}],
+    return Term::Table::Cell->new(
+        value        => "...",
+        border_left  => '>',
+        border_right => '<',
     );
 }
 
@@ -39,15 +42,20 @@ sub complex_check {
     my $self   = shift;
     my %params = @_;
 
-    my $got   = $params{got};
-    my $delta = $params{delta};
+    my $got     = $params{got};
+    my $delta   = $params{delta};
+    my $convert = $params{convert};
+    my $state   = $params{state};
 
+    my @checks;
     for my $check (@{$self->{+CHILDREN}}) {
-        my ($ok) = run_checks($got, $check, %params);
+        my ($c, $s) = $convert ? $convert->($check, $state) : ($check, $state);
+        my ($ok) = run_checks($got, $c, %params, state => $s);
         return 1 if $ok;
+        push @checks => ($c, ' ');
     }
 
-    $delta->add($params{path}, $_, $got) for @{$self->{+CHILDREN}};
+    $delta->add($params{path}, [$self => ' ', @checks], $got);
 
     return 0;
 }
