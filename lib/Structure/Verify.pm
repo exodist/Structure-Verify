@@ -72,7 +72,7 @@ sub _build {
         $lines = [ $caller->[2] ];
     }
 
-    my $check  = $class->new(file => $file, lines => $lines, via_build => 1);
+    my $check  = $class->new_build(file => $file, lines => $lines);
     my $builds = $meta->builds;
 
     push @$builds => $check;
@@ -86,8 +86,7 @@ sub _build {
 
     die $err unless $ok;
 
-    $check->set_via_build(0);
-    $check->init();
+    $check->post_build();
     return $check;
 }
 

@@ -14,11 +14,10 @@ sub SHOW_ADDRESS { 1 }
 
 sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
 
-sub init {
+sub post_build {
     my $self = shift;
 
-    $self->SUPER::init();
-    return if $self->{+VIA_BUILD};
+    $self->SUPER::post_build();
 
     croak "'value' must be a reference"
         unless ref($self->{+VALUE});

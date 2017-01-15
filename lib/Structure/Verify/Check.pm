@@ -6,7 +6,7 @@ use Carp qw/croak carp/;
 use Scalar::Util qw/blessed/;
 use Structure::Verify::Util::Ref qw/rtype ref_cell/;
 
-use Structure::Verify::HashBase qw/-_lines -file via_build/;
+use Structure::Verify::HashBase qw/-_lines -file -building/;
 
 use Term::Table::Cell;
 use Structure::Verify::Meta;
@@ -30,8 +30,26 @@ sub lines {
 
 sub init {
     my $self = shift;
+    $self->pre_build();
+    $self->post_build();
+}
 
+sub new_build {
+    my $class = shift;
+    my $self = bless {@_}, $class;
+    $self->pre_build;
+    return $self;
+}
+
+sub pre_build {
+    my $self = shift;
+    $self->{+BUILDING} = 1;
     $self->{+_LINES} ||= delete $self->{lines};
+}
+
+sub post_build {
+    my $self = shift;
+    $self->{+BUILDING} = 0;
 }
 
 sub build {

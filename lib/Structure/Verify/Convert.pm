@@ -55,7 +55,7 @@ sub convert {
         }
     }
 
-    my %args = (via_build => 1);
+    my %args;
     $args{lines} = $lines if $lines;
     $args{file}  = $file  if $file;
 
@@ -65,7 +65,7 @@ sub convert {
     my $build = sub {
         my ($type, $manage_state) = @_;
 
-        my $new = $type->new(%args);
+        my $new = $type->new_build(%args);
         my $new_state = $state;
         my $build = 1;
 
@@ -88,8 +88,7 @@ sub convert {
                 if $new->can('set_bounded');
         }
 
-        $new->set_via_build(0);
-        $new->init;
+        $new->post_build;
 
         return ($new, $new_state);
     };

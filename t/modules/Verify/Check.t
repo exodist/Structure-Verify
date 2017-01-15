@@ -5,7 +5,7 @@ BEGIN { require 't/is.pm'; is->import }
 my $CLASS = 'Structure::Verify::Check';
 use ok 'Structure::Verify::Check';
 
-ok($CLASS->can($_), "The '$_' method is defined") for qw/file via_build lines/;
+ok($CLASS->can($_), "The '$_' method is defined") for qw/file lines/;
 
 ok(!$CLASS->SHOW_ADDRESS, "Do not show memory addresses by default");
 

@@ -20,11 +20,10 @@ sub from_string {
     return $class->new(_parse_string_args(@_));
 }
 
-sub init {
+sub post_build {
     my $self = shift;
 
-    $self->SUPER::init();
-    return if $self->{+VIA_BUILD};
+    $self->SUPER::post_build();
 
     croak "At least one state must be specified"
         unless grep { $self->{$_} } @ORDER;

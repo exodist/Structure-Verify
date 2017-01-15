@@ -45,11 +45,10 @@ sub build {
     return $self->SUPER::build(@_);
 }
 
-sub init {
+sub post_build {
     my $self = shift;
 
-    $self->SUPER::init();
-    return if $self->{+VIA_BUILD};
+    $self->SUPER::post_build();
 
     my $type = $self->{+TYPE}
         or croak "'type' is required";

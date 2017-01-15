@@ -38,10 +38,10 @@ sub build {
     return $self->SUPER::build(@_);
 }
 
-sub init {
+sub pre_build {
     my $self = shift;
 
-    $self->SUPER::init();
+    $self->SUPER::pre_build();
 
     $self->{+METHODS} ||= [];
     $self->{+SUBTYPES} ||= [];

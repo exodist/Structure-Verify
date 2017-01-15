@@ -10,14 +10,18 @@ use Structure::Verify::Util::Ref qw/rtype/;
 use Sub::Info qw/sub_info/;
 use Carp qw/croak/;
 
-sub init {
+sub pre_build {
     my $self = shift;
 
-    $self->SUPER::init();
+    $self->SUPER::pre_build();
 
     $self->{+OPERATOR} ||= '->(...)';
+}
 
-    return if $self->via_build;
+sub post_build {
+    my $self = shift;
+
+    $self->SUPER::post_build();
 
     croak "The 'code' attribute is required"
         unless $self->{+CODE};

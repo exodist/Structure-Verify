@@ -11,11 +11,10 @@ use Structure::Verify::Util::Ref qw/rtype/;
 
 sub operator { $_[0]->negate ? '!~' : '=~' }
 
-sub init {
+sub post_build {
     my $self = shift;
 
-    $self->SUPER::init();
-    return if $self->{+VIA_BUILD};
+    $self->SUPER::post_build();
 
     croak "'value' must be a regular expression (got: $self->{+VALUE})"
         unless rtype($self->{+VALUE}) eq 'REGEXP';

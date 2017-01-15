@@ -41,10 +41,10 @@ sub cell {
     );
 }
 
-sub init {
+sub pre_build {
     my $self = shift;
 
-    $self->SUPER::init();
+    $self->SUPER::pre_build();
 
     $self->{+IDX} ||= 0;
     $self->{+COMPONENTS} ||= [];

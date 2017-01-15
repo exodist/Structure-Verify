@@ -17,10 +17,10 @@ use Term::Table::Cell;
 
 sub operator { 'IS' }
 
-sub init {
+sub pre_build {
     my $self = shift;
 
-    $self->SUPER::init();
+    $self->SUPER::pre_build();
 
     $self->{+COMPONENTS} ||= [];
 }

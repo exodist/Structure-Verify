@@ -12,12 +12,10 @@ use Structure::Verify::Util::Ref qw/render_ref/;
 
 sub operator { 'ISA' }
 
-sub init {
+sub post_build {
     my $self = shift;
 
-    $self->SUPER::init();
-
-    return if $self->via_build;
+    $self->SUPER::post_build();
 
     croak "The 'type' attribute is required"
         unless $self->{+TYPE};
