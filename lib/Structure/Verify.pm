@@ -86,6 +86,8 @@ sub _build {
 
     die $err unless $ok;
 
+    $check->set_via_build(0);
+    $check->init();
     return $check;
 }
 

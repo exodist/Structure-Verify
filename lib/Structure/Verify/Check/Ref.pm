@@ -55,7 +55,7 @@ sub init {
         or croak "'type' is required";
 
     croak "Type '$type' is not allowed to have subchecks"
-        if $self->{+SUBCHECK} && $type !~ m/^(SCALAR|REF)$/;
+        if $self->{+SUBCHECK} && $type ne 'subcheck';
 }
 
 sub verify {

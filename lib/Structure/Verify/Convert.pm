@@ -15,11 +15,12 @@ use Structure::Verify::Check::Hash();
 use Structure::Verify::Check::Object();
 use Structure::Verify::Check::Ref();
 
+use Structure::Verify::Check::ExactRef();
 use Structure::Verify::Check::Number();
 use Structure::Verify::Check::Pattern();
-use Structure::Verify::Check::ExactRef();
 use Structure::Verify::Check::Regex();
 use Structure::Verify::Check::String();
+use Structure::Verify::Check::Undef();
 use Structure::Verify::Check::VString();
 
 use Scalar::Util qw/blessed isvstring/;
@@ -87,8 +88,14 @@ sub convert {
                 if $new->can('set_bounded');
         }
 
+        $new->set_via_build(0);
+        $new->init;
+
         return ($new, $new_state);
     };
+
+    return $build->('Structure::Verify::Check::Undef', 0)
+        unless defined $in;
 
     # Non-refs are just treated as strings
     return $build->('Structure::Verify::Check::String', 0)
