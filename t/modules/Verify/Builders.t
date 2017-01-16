@@ -9,4 +9,6 @@ use Structure::Verify::Builders(
 
 ok(__PACKAGE__->can($_), "Imported $_") for qw /hash array bag object any all one none build_all/;
 
+die "Needs more testing, test prototypes";
+
 done_testing;
