@@ -4,7 +4,7 @@ use warnings;
 
 use Structure::Verify ':ALL';
 use Structure::Verify::Convert qw/convert/;
-use Structure::Verify::Builders qw/bag/;
+use Structure::Verify::Builders qw/bag(&)/;
 use List::Util qw/shuffle/;
 
 my $c = sub { convert($_[0], $_[1], {use_regex => 1}) };

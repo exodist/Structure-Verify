@@ -10,7 +10,7 @@ use Carp qw/croak/;
 
 use Structure::Verify ':ALL';
 use Structure::Verify::Builders(
-    qw{ hash array object bag },
+    qw{ hash(&) array(&) object(&) bag(&) },
 );
 
 our @EXPORT = qw{

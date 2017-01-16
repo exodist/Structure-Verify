@@ -6,9 +6,9 @@ use Test2::API qw/context/;
 
 use Structure::Verify ':ALL';
 use Structure::Verify::Builders(
-    qw{ hash array object },
-    hash => {-as => 'hoot'},
-    hash => {-as => 'hoop'},
+    qw{ hash(&) array(&) object(&) },
+    'hash(&)' => {-as => 'hoot'},
+    'hash(&)' => {-as => 'hoop'},
 );
 
 ok(__PACKAGE__->can($_), "imported $_()") for qw/hash array hoop hoot/;

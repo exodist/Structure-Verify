@@ -40,7 +40,7 @@ sub build_sub {
     my ($caller, $build, $name) = @_;
 
     $build =~ s/(\(.*\))$//;    # Remove any prototype from the build
-    my $default_proto = $1 || '(&)';
+    my $default_proto = $1 || '';
 
     $name =~ s/(\(.*\))$//;     # Remove any prototype from the name
     my $proto = $1 || $default_proto;

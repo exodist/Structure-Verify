@@ -2,7 +2,7 @@ use strict;
 use warnings;
 BEGIN { require 't/is.pm'; is->import }
 
-use Structure::Verify::Builders qw/all/;
+use Structure::Verify::Builders qw/all(&)/;
 
 my $CLASS = 'Structure::Verify::Check::All';
 

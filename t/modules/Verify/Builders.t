@@ -17,7 +17,7 @@ ok(__PACKAGE__->can($_), "Imported $_") for qw{
     xxx yyy zzz
 };
 
-is(prototype(\&build_all), '&',   "Got default prototype");
+is(prototype(\&build_all), undef, "no default prototype");
 is(prototype(\&exact_ref), '$',   "Got specified prototype, no rename");
 is(prototype(\&a_coderef), '&',   "specified '&' in alias");
 is(prototype(\&a_hash),    '\\%', "specified '\\\%' in alias");
