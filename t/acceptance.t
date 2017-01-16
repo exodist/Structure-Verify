@@ -28,13 +28,13 @@ my $convert = sub {
 sub isx($$;$) {
     my ($ok, $delta) = run_checks($_[0], $_[1], convert => $convert);
     my $ctx = context;
-    ok($ok, $_[2]) || diag map {"$_\n"} $delta->term_table->render;
+    ok($ok, $_[2]) || diag map { "$_\n" } $delta->term_table->render;
     $ctx->release;
     return $ok;
 }
 
 isx(
-    { a => [ 1 ], b => 'foo', c => 'bar' },
+    {a => [1], b => 'foo', c => 'bar'},
     hoot {
         check a => build array => sub {
             check build number => 1;
@@ -57,26 +57,28 @@ isx(
 );
 
 my ($ok, $delta) = run_checks(
-    { 0 => 'xxx', a => [ 1, 2 ], b => "foo\nfoo  \t", c => 'bar', d => 'x' },
-    build(hash => sub {
-        check a => build array => sub {
-            check build number => 2;
+    {0 => 'xxx', a => [1, 2], b => "foo\nfoo  \t", c => 'bar', d => 'x'},
+    build(
+        hash => sub {
+            check a => build array => sub {
+                check build number => 2;
+                end;
+            };
+
+            check b => 'flub';
+            check b => build string => 'foox';
+            check b => build pattern => qr/foox/;
+            check b => !build pattern => qr/foo/;
+
+            check c => 'bub';
+            check c => build string => 'barx';
+            check c => !build string => 'bar';
+            check c => build pattern => qr/barx/;
+            check c => !build pattern => qr/bar/;
+
             end;
-        };
-
-        check b => 'flub';
-        check b => build string => 'foox';
-        check b => build pattern => qr/foox/;
-        check b => !build pattern => qr/foo/;
-
-        check c => 'bub';
-        check c => build string => 'barx';
-        check c => !build string => 'bar';
-        check c => build pattern => qr/barx/;
-        check c => !build pattern => qr/bar/;
-
-        end;
-    }),
+        }
+    ),
     convert => $convert,
 );
 
@@ -88,28 +90,28 @@ is_deeply(
         '+--------+---------+----+-----------------+--------+',
         '| PATH   | GOT     | OP | CHECK           | LINES  |',
         '+--------+---------+----+-----------------+--------+',
-        '| {a}[0] | 1       | == | 2               | 63     |',
-        '| {a}[1] | 2       |    |> OUT OF BOUNDS <| 62, 65 |',
+        '| {a}[0] | 1       | == | 2               | 64     |',
+        '| {a}[1] | 2       |    |> OUT OF BOUNDS <| 63, 66 |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | eq | flub            | 67     |',
+        '| {b}    | foo\n   | eq | flub            | 68     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | eq | foox            | 68     |',
+        '| {b}    | foo\n   | eq | foox            | 69     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 69     |',
+        '| {b}    | foo\n   | =~ |> (?^:foox)     <| 70     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 70     |',
+        '| {b}    | foo\n   | !~ |> (?^:foo)      <| 71     |',
         '|        | foo  \t |    |                 |        |',
         '|        |         |    |                 |        |',
-        '| {c}    | bar     | eq | bub             | 72     |',
-        '| {c}    | bar     | eq | barx            | 73     |',
-        '| {c}    | bar     | ne | bar             | 74     |',
-        '| {c}    | bar     | =~ |> (?^:barx)     <| 75     |',
-        '| {c}    | bar     | !~ |> (?^:bar)      <| 76     |',
-        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 64, 79 |',
-        '| {d}    | x       |    |> OUT OF BOUNDS <| 64, 79 |',
+        '| {c}    | bar     | eq | bub             | 73     |',
+        '| {c}    | bar     | eq | barx            | 74     |',
+        '| {c}    | bar     | ne | bar             | 75     |',
+        '| {c}    | bar     | =~ |> (?^:barx)     <| 76     |',
+        '| {c}    | bar     | !~ |> (?^:bar)      <| 77     |',
+        '| {0}    | xxx     |    |> OUT OF BOUNDS <| 65, 80 |',
+        '| {d}    | x       |    |> OUT OF BOUNDS <| 65, 80 |',
         '+--------+---------+----+-----------------+--------+',
     ],
     "Got useful table"

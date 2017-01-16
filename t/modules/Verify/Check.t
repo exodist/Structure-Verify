@@ -8,6 +8,7 @@ use ok 'Structure::Verify::Check';
 use Structure::Verify::Builders qw/exact_ref($)/;
 
 {
+
     package Fake::Check;
     use base 'Structure::Verify::Check';
     use Structure::Verify::HashBase qw/-value/;
@@ -62,11 +63,11 @@ tests build_part1 => sub {
 
     %called = ();
     my $x = $CLASS->new;
-    is( {%called}, {pre_build => 1, post_build => 1}, "Called pre_build and post_build");
+    is({%called}, {pre_build => 1, post_build => 1}, "Called pre_build and post_build");
 
     %called = ();
     my $y = $CLASS->new_build;
-    is( {%called}, {pre_build => 1}, "Called pre_build only");
+    is({%called}, {pre_build => 1}, "Called pre_build only");
 };
 
 tests build_part2 => sub {
@@ -143,8 +144,8 @@ tests cell => sub {
     is($cell->cells->[0]->border_left,  '>',   "left arrow");
     is($cell->cells->[0]->border_right, '<',   "right arrow");
     is($cell->cells->[1]->value,        "XxX", "Value is 'XxX'");
-    is($cell->cells->[1]->border_left,  ' ', "left border pad");
-    is($cell->cells->[1]->border_right, ' ', "right border pad");
+    is($cell->cells->[1]->border_left,  ' ',   "left border pad");
+    is($cell->cells->[1]->border_right, ' ',   "right border pad");
 
     $Fake::Check::SHOW_ADDRESS = 1;
     my $six = Fake::Check->new(value => $it);
@@ -154,8 +155,8 @@ tests cell => sub {
     is($cell->cells->[0]->border_left,  '>',   "left arrow");
     is($cell->cells->[0]->border_right, '<',   "right arrow");
     is($cell->cells->[1]->value,        "XxX", "Value is 'XxX'");
-    is($cell->cells->[1]->border_left,  ' ', "left border pad");
-    is($cell->cells->[1]->border_right, ' ', "right border pad");
+    is($cell->cells->[1]->border_left,  ' ',   "left border pad");
+    is($cell->cells->[1]->border_right, ' ',   "right border pad");
 };
 
 done_testing;

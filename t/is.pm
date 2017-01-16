@@ -24,7 +24,7 @@ my $DELTA;
 sub last_delta { $DELTA }
 
 sub import {
-    my $class = shift;
+    my $class  = shift;
     my @import = @_;
     my $caller = caller;
 

@@ -110,6 +110,7 @@ tests from_array_idx => sub {
 
 tests from_method => sub {
     {
+
         package TestObj;
         use Structure::Verify::HashBase qw/foo bar baz/;
 
@@ -124,7 +125,7 @@ tests from_method => sub {
         }
 
         sub all_array {
-            my $self = shift;
+            my $self  = shift;
             my @array = $self->all_list;
             return @array;
         }
@@ -257,6 +258,7 @@ tests from_method => sub {
 
 tests lines => sub {
     {
+
         package TestObj2;
         sub structure_verify_lines { (1, 2) }
     }
@@ -310,9 +312,9 @@ tests cell => sub {
 
     $one = $CLASS->new(exists => 1, defined => 1, value => {}, meta => 0);
     $cell = $one->cell;
-    is($cell->value, 'HASH(...)', "value is 'HASH(...)'");
-    is($cell->border_left,  '>', "got left border");
-    is($cell->border_right, '<', "got right border");
+    is($cell->value,        'HASH(...)', "value is 'HASH(...)'");
+    is($cell->border_left,  '>',         "got left border");
+    is($cell->border_right, '<',         "got right border");
 
     $cell = $one->cell(show_address => 1);
     like($cell->value, qr/^HASH\(0x.*\)$/i, "value is 'HASH(0x...)'");

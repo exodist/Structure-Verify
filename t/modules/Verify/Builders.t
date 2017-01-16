@@ -6,8 +6,8 @@ use Structure::Verify::Builders(
     qw{ any all one none },
     all => {-as => 'build_all'},
     'exact_ref($)',
-    exact_ref => { -as => 'this_ref($)' },
-    exact_ref => [qw/ a_coderef(&) a_hash(\%) an_array(\@) a_scalar(\$) /],
+    exact_ref      => {-as => 'this_ref($)'},
+    exact_ref      => [qw/ a_coderef(&) a_hash(\%) an_array(\@) a_scalar(\$) /],
     'exact_ref($)' => [qw/xxx yyy zzz/],
 );
 

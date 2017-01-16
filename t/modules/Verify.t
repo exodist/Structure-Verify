@@ -38,6 +38,7 @@ build 'string' => sub {
 };
 
 {
+
     package Structure::Verify::Check::MyCheck;
     use parent 'Structure::Verify::Check';
 
@@ -49,7 +50,7 @@ build 'string' => sub {
     sub add_subcheck {
         my $self = shift;
         @PREV_ARGS = @ARGS;
-        @ARGS = @_;
+        @ARGS      = @_;
     }
 }
 
@@ -67,8 +68,7 @@ build my_check => sub {
 
     my $line = __LINE__ + 1;
     check_pair foo => 'bar';
-    is_deeply(
-        [
+    is_deeply([
             @Structure::Verify::Check::MyCheck::PREV_ARGS,
             @Structure::Verify::Check::MyCheck::ARGS,
         ],
@@ -99,7 +99,9 @@ like(
 );
 
 like(
-    exception { checks sub { 1 } },
+    exception {
+        checks sub { 1 }
+    },
     qr/'checks' takes either a hashref or an arrayref/,
     "must be a has or array ref"
 );
@@ -127,8 +129,8 @@ my $h1 = build hash => sub { end };
 my $h2 = build hash => sub { etc };
 
 is($h0->bounded, undef, "not set");
-is($h1->bounded, 1, "bounded");
-is($h2->bounded, 0, "unbounded");
+is($h1->bounded, 1,     "bounded");
+is($h2->bounded, 0,     "unbounded");
 
 my $hx = build hash => sub {
     check 'foo' => build string => 'bar';
@@ -137,14 +139,14 @@ my $hx = build hash => sub {
 };
 
 my ($bool, $delta) = run_checks({foo => 'bar', baz => 'bat'}, $hx);
-ok($bool, "pass");
+ok($bool,   "pass");
 ok(!$delta, "no delta");
 
 ($bool, $delta) = run_checks({foo => 'bar1', baz => 'bat1'}, $hx);
 ok(!$bool, "fail");
 ok($delta, "got delta");
 
-is(@{$delta->rows}, 2, "2 rows in delta");
+is(@{$delta->rows},        2,       "2 rows in delta");
 is($delta->rows->[0]->[0], '{foo}', "first row is foo");
 is($delta->rows->[1]->[0], '{baz}', "second row is baz");
 
@@ -160,7 +162,7 @@ like(
     "Must have a valid check (nested)"
 );
 
-my ($ok) = run_checks('xxx', 'xxx', convert => sub { (build(string => $_[0]), $_[1]) } );
+my ($ok) = run_checks('xxx', 'xxx', convert => sub { (build(string => $_[0]), $_[1]) });
 ok($ok, "Success via convert");
 
 done_testing;

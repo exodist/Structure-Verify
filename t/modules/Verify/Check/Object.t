@@ -6,16 +6,17 @@ use Structure::Verify ':ALL';
 use Structure::Verify::Builders qw/ object(&) /;
 use Structure::Verify::Convert qw/ basic_convert /;
 
-
 {
+
     package Bar;
-    sub a { 1 };
+    sub a { 1 }
 
     package Foo;
     push @Foo::ISA => 'Bar';
 }
 
 {
+
     package Baz;
     push @Baz::ISA => 'Foo';
 
@@ -26,6 +27,7 @@ use Structure::Verify::Convert qw/ basic_convert /;
 
 my $x = bless {}, 'Foo';
 
+my $line;
 my ($ok, $delta) = run_checks(
     $x,
     object {
@@ -42,7 +44,7 @@ is_deeply(
         '+-----------------+---------+----------+-------+',
         '| GOT             | OP      | CHECK    | LINES |',
         '+-----------------+---------+----------+-------+',
-        '|> Foo=HASH(...) <| BLESSED |> Foo::X <| 32    |',
+        '|> Foo=HASH(...) <| BLESSED |> Foo::X <| 34    |',
         '+-----------------+---------+----------+-------+',
     ],
     "Table shows incorrect type"
@@ -51,10 +53,10 @@ is_deeply(
 ($ok, $delta) = run_checks(
     $x,
     object {
-        check -isa => 'Foo';
-        check -isa => 'Bar';
-        check -isa => 'Bad1';
-        check -isa => 'Bad2';
+        check -isa     => 'Foo';
+        check -isa     => 'Bar';
+        check -isa     => 'Bad1';
+        check -isa     => 'Bad2';
         check -blessed => 'Foo';
 
         check a => 1;
@@ -71,9 +73,9 @@ is_deeply(
         '+-------+-----------------+-----+-------+-------+',
         '| PATH  | GOT             | OP  | CHECK | LINES |',
         '+-------+-----------------+-----+-------+-------+',
-        '|       |> Foo=HASH(...) <| ISA | Bad1  | 56    |',
-        '|       |> Foo=HASH(...) <| ISA | Bad2  | 57    |',
-        '| ->a() | 1               | eq  | 2     | 61    |',
+        '|       |> Foo=HASH(...) <| ISA | Bad1  | 58    |',
+        '|       |> Foo=HASH(...) <| ISA | Bad2  | 59    |',
+        '| ->a() | 1               | eq  | 2     | 63    |',
         '+-------+-----------------+-----+-------+-------+',
     ],
     "Got 2 failed isa checks, and 1 failed method check"
@@ -83,10 +85,10 @@ my $y = bless {}, 'Baz';
 ($ok, $delta) = run_checks(
     $y,
     object {
-        check -isa => 'Foo';
-        check -isa => 'Bar';
-        check -isa => 'Bad1';
-        check -isa => 'Bad2';
+        check -isa     => 'Foo';
+        check -isa     => 'Bar';
+        check -isa     => 'Bad1';
+        check -isa     => 'Bad2';
         check -blessed => 'Baz';
 
         check a => 1;
@@ -102,10 +104,10 @@ is_deeply(
         '+-----------------+-----+-------+-------+',
         '| GOT             | OP  | CHECK | LINES |',
         '+-----------------+-----+-------+-------+',
-        '|> Baz=HASH(...) <| ISA | Bad1  | 88    |',
+        '|> Baz=HASH(...) <| ISA | Bad1  | 90    |',
         '|  BAAAAZZZZ      |     |       |       |',
         '|                 |     |       |       |',
-        '|> Baz=HASH(...) <| ISA | Bad2  | 89    |',
+        '|> Baz=HASH(...) <| ISA | Bad2  | 91    |',
         '|  BAAAAZZZZ      |     |       |       |',
         '+-----------------+-----+-------+-------+',
     ],

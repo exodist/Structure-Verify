@@ -19,29 +19,29 @@ tests convert_from_check => sub {
 
     my ($got, $gs) = convert($array, $state, {});
     ok($got == $array, "Passed through as-is");
-    ok($gs == $state, "State is not modified");
+    ok($gs == $state,  "State is not modified");
 
     ($got, $gs) = convert($array, $state, {implicit_end => 1});
     ok($got != $array, "Did not get original");
-    ok($gs == $state, "State is not modified");
+    ok($gs == $state,  "State is not modified");
     is_deeply(
-        { %$array, bounded => 'implicit' },
-        { %$got },
+        {%$array, bounded => 'implicit'},
+        {%$got},
         "Cloned, but now bounded is set to true"
     );
 
     $array->set_bounded(0);
     ($got, $gs) = convert($array, $state, {implicit_end => 1});
     ok($got == $array, "Passed through as-is, bound is already defined");
-    ok($gs == $state, "State is not modified");
+    ok($gs == $state,  "State is not modified");
 };
 
 tests convert_from_protocheck => sub {
     my $state = {};
     my $proto = Structure::Verify::ProtoCheck->new(
-        file => 'foo.t',
+        file  => 'foo.t',
         lines => [1, 3],
-        raw => 'apple',
+        raw   => 'apple',
     );
 
     my ($got, $gs) = convert($proto, $state, {});

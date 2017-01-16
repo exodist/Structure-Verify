@@ -27,6 +27,6 @@ my ($bool, $delta) = run_checks(
     convert => $c,
 );
 
-ok($bool, "Checks passed") || diag map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
+ok($bool, "Checks passed") || diag map { "$_\n" } $delta->term_table(table_args => {max_width => 80})->render;
 
 done_testing;

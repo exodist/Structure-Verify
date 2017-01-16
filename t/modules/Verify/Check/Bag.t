@@ -19,7 +19,7 @@ my ($bool, $delta) = run_checks(
     convert => $c,
 );
 
-ok($bool, "Pass") || diag map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
+ok($bool, "Pass") || diag map { "$_\n" } $delta->term_table(table_args => {max_width => 80})->render;
 
 ($bool, $delta) = run_checks(
     [qw/ x y z a foo bar baz /],
@@ -91,7 +91,7 @@ is_deeply(
     convert => $c,
 );
 
-ok($bool, "No count specified, any number works") || diag map {"$_\n"} $delta->term_table(table_args => {max_width => 80})->render;
+ok($bool, "No count specified, any number works") || diag map { "$_\n" } $delta->term_table(table_args => {max_width => 80})->render;
 
 ($bool, $delta) = run_checks(
     [qw/ foo bar baz /],
@@ -119,6 +119,5 @@ is_deeply(
     ],
     "Got table of extras matches"
 );
-
 
 done_testing;
