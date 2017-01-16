@@ -15,29 +15,47 @@ sub import {
     my $caller = caller;
 
     while (@_) {
-        my $input = shift;
+        my $build = shift;
 
-        my $name  = $input;
-        my $build = $input;
         if (rtype($_[0]) eq 'HASH') {
             my $spec = shift;
 
-            $name = $spec->{'-as'}
+            my $name = $spec->{'-as'}
                 or croak "Missing '-as' key in import specification hash";
+
+            $class->build_sub($caller, $build, $name);
         }
-
-        $build =~ s/(\(.*\))$//;    # Remove any prototype from the build
-        my $default_proto = $1 || '(&)';
-
-        $name =~ s/(\(.*\))$//;     # Remove any prototype from the name
-        my $proto = $1 || $default_proto;
-
-        no strict 'refs';
-        *{"$caller\::$name"} = eval "sub$proto" . ' {
-            my @caller = caller(0);
-            Structure::Verify::_build(\@caller, $build, $_[0]);
-        }' or die $@;
+        elsif (rtype($_[0]) eq 'ARRAY') {
+            my $list = shift;
+            $class->build_sub($caller, $build, $_) for @$list
+        }
+        else {
+            $class->build_sub($caller, $build, $build);
+        }
     }
+}
+
+sub build_sub {
+    my $class = shift;
+    my ($caller, $build, $name) = @_;
+
+    $build =~ s/(\(.*\))$//;    # Remove any prototype from the build
+    my $default_proto = $1 || '(&)';
+
+    $name =~ s/(\(.*\))$//;     # Remove any prototype from the name
+    my $proto = $1 || $default_proto;
+
+    my $file = __FILE__;
+    my $line = __LINE__ + 2;
+    eval <<"    EOT" or die $@;
+#line $line "$file"
+sub ${caller}::${name}${proto} {
+    my \@caller = caller(0);
+    Structure::Verify::_build(\\\@caller, \$build, \$_[0]);
+};
+
+1;
+    EOT
 }
 
 1;
