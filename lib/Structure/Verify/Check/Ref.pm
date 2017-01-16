@@ -37,7 +37,7 @@ sub build {
         unless $rtype;
 
     if ($SUBCHECK{$rtype}) {
-        $self->{+TYPE} = 'subcheck';
+        $self->{+TYPE}     = 'subcheck';
         $self->{+SUBCHECK} = $$with;
         return;
     }

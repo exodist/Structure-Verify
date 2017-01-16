@@ -50,5 +50,4 @@ sub build {
     $self->SUPER::build(@_);
 }
 
-
 1;

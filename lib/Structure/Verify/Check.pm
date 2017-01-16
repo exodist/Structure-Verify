@@ -14,7 +14,7 @@ use Structure::Verify::Meta;
 sub SHOW_ADDRESS { 0 }
 
 sub not_operator { '!' . $_[0]->operator }
-sub operator     { croak((blessed($_[0]) || $_[0]) . " does not implement operator()") }
+sub operator { croak((blessed($_[0]) || $_[0]) . " does not implement operator()") }
 
 sub verify_meta    { undef }
 sub verify_simple  { undef }
@@ -78,7 +78,7 @@ sub build {
         if $self->can('value') && (!$type || $type eq 'REGEXP');
 
     my $class = blessed($self);
-    croak "'$class' does not know how to build with '$with'"
+    croak "'$class' does not know how to build with '$with'";
 }
 
 sub cell {

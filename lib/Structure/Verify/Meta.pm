@@ -15,10 +15,9 @@ sub new {
     return $pkg->STRUCTURE_VERIFY
         if $pkg->can('STRUCTURE_VERIFY');
 
-    my $self = bless(
-        {
+    my $self = bless({
             PACKAGE() => $pkg,
-            BUILDS() => [],
+            BUILDS()  => [],
         },
         $class
     );
@@ -32,7 +31,7 @@ sub new {
 }
 
 sub current_build {
-    my $self = shift;
+    my $self   = shift;
     my $builds = $self->{+BUILDS};
 
     return unless @$builds;

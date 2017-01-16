@@ -27,7 +27,7 @@ sub build {
     my $self = shift;
     my ($with, $alias) = @_;
 
-    if (rtype($with)  eq 'HASH') {
+    if (rtype($with) eq 'HASH') {
         $self->add_subcheck($_ => $with->{$_}) for keys %$with;
         return;
     }

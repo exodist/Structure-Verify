@@ -8,7 +8,7 @@ use Structure::Verify::Util::Ref qw/rtype/;
 use Structure::Verify::Meta;
 use Structure::Verify;
 
-$Carp::Internal{ (__PACKAGE__) }++;
+$Carp::Internal{(__PACKAGE__)}++;
 
 sub import {
     my $class  = shift;
@@ -27,7 +27,7 @@ sub import {
         }
         elsif (rtype($_[0]) eq 'ARRAY') {
             my $list = shift;
-            $class->build_sub($caller, $build, $_) for @$list
+            $class->build_sub($caller, $build, $_) for @$list;
         }
         else {
             $class->build_sub($caller, $build, $build);

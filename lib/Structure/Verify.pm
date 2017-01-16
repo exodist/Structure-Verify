@@ -14,7 +14,7 @@ use Structure::Verify::ProtoCheck;
 
 our $VERSION = '0.001';
 
-$Carp::Internal{ (__PACKAGE__) }++;
+$Carp::Internal{(__PACKAGE__)}++;
 
 use Importer Importer => 'import';
 our @EXPORT_OK = qw{
@@ -69,10 +69,10 @@ sub _build {
     }
     else {
         $file  = $caller->[1];
-        $lines = [ $caller->[2] ];
+        $lines = [$caller->[2]];
     }
 
-    my $check  = $class->new_build(file => $file, lines => $lines);
+    my $check = $class->new_build(file => $file, lines => $lines);
     my $builds = $meta->builds;
 
     push @$builds => $check;
@@ -93,7 +93,7 @@ sub _build {
 sub _add_check {
     my $caller = shift;
     my $check  = shift;
-    my ($id) = @_;
+    my ($id)   = @_;
 
     my $meta = Structure::Verify::Meta->new($caller->[0]);
     my $build = $meta->current_build or croak "No current build";
@@ -114,8 +114,8 @@ sub _add_check {
 }
 
 sub check($;$) {
-    my $check = pop;
-    my ($id) = @_;
+    my $check  = pop;
+    my ($id)   = @_;
     my @caller = caller(0);
 
     return _add_check(\@caller, $check, $id)
@@ -136,7 +136,7 @@ sub check_pair($$) {
 }
 
 sub checks($) {
-    my $ref = shift;
+    my $ref  = shift;
     my $type = rtype($ref);
 
     my @caller = caller(0);

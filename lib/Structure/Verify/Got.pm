@@ -115,8 +115,7 @@ sub from_method {
         $err = $@ unless $ok;
     }
 
-    return bless(
-        {
+    return bless({
             EXISTS()    => 0,
             DEFINED()   => 0,
             EXCEPTION() => $err || "Unknown error",
@@ -146,7 +145,7 @@ sub from_method {
 
         {
             local ($@, $!, $?);
-            $ok = eval qq[#line $line "$file"\n\$out = {\@out}; 1];
+            $ok  = eval qq[#line $line "$file"\n\$out = {\@out}; 1];
             $err = $@;
         }
 
@@ -182,7 +181,7 @@ sub lines {
 }
 
 sub cell {
-    my $self = shift;
+    my $self   = shift;
     my %params = @_;
 
     return Term::Table::Cell->new(
@@ -207,10 +206,12 @@ sub cell {
 
     return Term::Table::Cell->new(
         value => "$value",
-        $self->{+META} ? (
+        $self->{+META}
+        ? (
             border_left  => '>',
             border_right => '<',
-        ) : (),
+            )
+        : (),
     ) unless ref($value);
 
     return ref_cell($value, $params{show_address});

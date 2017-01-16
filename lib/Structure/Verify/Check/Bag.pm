@@ -46,7 +46,7 @@ sub verify_meta {
 }
 
 sub add_subcheck {
-    my $self = shift;
+    my $self  = shift;
     my $check = pop;
     my $count = @_ ? shift : -1;
 
@@ -58,7 +58,7 @@ sub build {
     my ($with, $alias) = @_;
 
     if (rtype($with) eq 'ARRAY') {
-        push @{$self->{+COMPONENTS}} => map {[1, $_]} @$with;
+        push @{$self->{+COMPONENTS}} => map { [1, $_] } @$with;
         return;
     }
 
@@ -135,8 +135,7 @@ sub verify_complex {
         $delta->add(
             "$path\[$v]",
             Structure::Verify::Check::Boundary->new(lines => [$self->lines]),
-            Structure::Verify::Got->from_array_idx($value, $v)
-        );
+            Structure::Verify::Got->from_array_idx($value, $v));
     }
 
     return $bad ? 0 : 1;
@@ -155,7 +154,7 @@ sub _render_trace {
     $out .= " "                            if @lines;
     $out .= "line $lines[0]"               if @lines == 1;
     $out .= "lines $lines[0] -> $lines[1]" if @lines == 2;
-    $out .= "lines " . join(', ', @lines)  if @lines > 2;
+    $out .= "lines " . join(', ', @lines) if @lines > 2;
 
     return "($out)\n  ";
 }

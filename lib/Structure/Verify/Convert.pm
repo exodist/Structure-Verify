@@ -59,15 +59,15 @@ sub convert {
     $args{lines} = $lines if $lines;
     $args{file}  = $file  if $file;
 
-    my $type    = rtype($in);
+    my $type = rtype($in);
     my $blessed = blessed($in) || "";
 
     my $build = sub {
         my ($type, $manage_state) = @_;
 
-        my $new = $type->new_build(%args);
+        my $new       = $type->new_build(%args);
         my $new_state = $state;
-        my $build = 1;
+        my $build     = 1;
 
         # If we find recursion we do not build it, instead we make it a
         # boundless type check with no subchecks.

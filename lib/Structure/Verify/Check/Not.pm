@@ -16,7 +16,7 @@ sub SHOW_ADDRESS {
 sub lines {
     my $self = shift;
 
-    return grep {defined $_} (
+    return grep { defined $_ } (
         $self->{+CHECK}->lines,
         $self->SUPER::lines(),
     );
@@ -54,17 +54,17 @@ sub verify_meta {
 }
 
 sub verify_simple {
-    my $self = shift;
+    my $self   = shift;
     my $verify = $self->{+CHECK}->verify_simple(@_);
     return $verify unless defined $verify;
     return $verify ? 0 : 1;
 }
 
 sub verify_complex {
-    my $self = shift;
+    my $self   = shift;
     my %params = @_;
 
-    my $delta = Structure::Verify::Delta->new();
+    my $delta  = Structure::Verify::Delta->new();
     my $verify = $self->{+CHECK}->verify_complex(
         %params,
         delta => $delta,
@@ -76,7 +76,7 @@ sub verify_complex {
 sub subchecks {
     my $self = shift;
 
-    my $class = blessed($self);
+    my $class     = blessed($self);
     my @subchecks = $self->{+CHECK}->subchecks(@_);
 
     $_->[1] = $class->new(check => $_->[1], lines => [$self->lines]) for @subchecks;

@@ -45,7 +45,7 @@ sub term_table {
         my ($path, $check, $got, %params) = @{$_};
 
         my (%seen1, %seen2);
-        my $got_lines   = defined($got)   ? join ', ' => grep { !$seen1{$_}++ } $got->lines   : '';
+        my $got_lines = defined($got) ? join ', ' => grep { !$seen1{$_}++ } $got->lines : '';
         my $star  = $params{'*'}     || '';
         my $notes = $params{'notes'} || '';
 
@@ -64,15 +64,15 @@ sub term_table {
             }
 
             $star        = $has_star ? Structure::Verify::Delta::CellStackNoSanitize->new(cells => \@star_cells) : '';
-            $operator    = Structure::Verify::Delta::CellStackNoSanitize->new(cells => \@oper_cells);
-            $check_lines = Structure::Verify::Delta::CellStackNoSanitize->new(cells => \@line_cells);
-            $check_cell  = Term::Table::CellStack->new(cells => \@check_cells);
-            $check       = $check->[0];
+            $operator    = Structure::Verify::Delta::CellStackNoSanitize->new(cells             => \@oper_cells);
+            $check_lines = Structure::Verify::Delta::CellStackNoSanitize->new(cells             => \@line_cells);
+            $check_cell = Term::Table::CellStack->new(cells => \@check_cells);
+            $check = $check->[0];
         }
         elsif (defined $check) {
-            $operator = $check->operator;
+            $operator    = $check->operator;
             $check_lines = join ', ' => grep { !$seen2{$_}++ } $check->lines;
-            $check_cell = $check;
+            $check_cell  = $check;
         }
 
         $_ == $SPACE ? [Term::Table::Spacer->new] : [

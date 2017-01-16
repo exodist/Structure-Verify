@@ -10,7 +10,7 @@ use Carp qw/croak/;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
-my @ORDER = ( +TRUE, +FALSE, +DEFINED, +UNDEFINED, +EXISTS, +NON_EXISTANT );
+my @ORDER = (+TRUE, +FALSE, +DEFINED, +UNDEFINED, +EXISTS, +NON_EXISTANT);
 my %ALLOW = map { $_ => $_ } @ORDER;
 
 sub operator     { 'IN' }
@@ -74,7 +74,7 @@ sub build {
 }
 
 sub add_subcheck {
-    my $self  = shift;
+    my $self = shift;
     my ($thing, $bool) = @_;
 
     croak "'$thing' is not a valid truthy state"

@@ -41,7 +41,7 @@ sub build {
 
     if (ref($with)) {
         my $class = blessed($self);
-        croak "'$class' does not know how to build with '$with'"
+        croak "'$class' does not know how to build with '$with'";
     }
 
     $self->{+TYPE} = $with;
