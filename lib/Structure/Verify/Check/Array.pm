@@ -7,6 +7,7 @@ use Structure::Verify::HashBase qw/-components -idx bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
 use List::Util qw/max/;
+use Carp qw/croak/;
 
 use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
@@ -95,8 +96,22 @@ sub subchecks {
 sub add_subcheck {
     my $self  = shift;
     my $check = pop;
-    my $idx   = @_ ? shift : $self->{+IDX}++;
 
+    my $idx;
+    if (@_) {
+        my $in = shift;
+
+        my $int = int($in);
+        croak "Index must be an integer, '$idx' does not look like an integer as conversion yields '$int'"
+            if "$in" ne "$int";
+
+        $idx = $int;
+    }
+    else {
+        $idx = $self->{+IDX};
+    }
+
+    $self->{+IDX} = $idx + 1;
     push @{$self->{+COMPONENTS}} => [$idx, $check];
 }
 

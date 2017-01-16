@@ -277,42 +277,48 @@ tests lines => sub {
     is_deeply([$two->lines], [1, 2], "got lines");
 };
 
+tests cell => sub {
+    my $one = $CLASS->new(exception => 'an exception');
+    my $cell = $one->cell;
+    is($cell->value,        'Exception: an exception', "Cell has an exception");
+    is($cell->border_left,  '>',                       "got left border");
+    is($cell->border_right, '<',                       "got right border");
+
+    $one = $CLASS->new(exists => 0);
+    $cell = $one->cell;
+    is($cell->value,        'DOES NOT EXIST', "value does not exist");
+    is($cell->border_left,  '>',              "got left border");
+    is($cell->border_right, '<',              "got right border");
+
+    $one = $CLASS->new(exists => 1, defined => 0);
+    $cell = $one->cell;
+    is($cell->value,        'NOT DEFINED', "value is not defined");
+    is($cell->border_left,  '>',           "got left border");
+    is($cell->border_right, '<',           "got right border");
+
+    $one = $CLASS->new(exists => 1, defined => 1, value => 'a', meta => 1);
+    $cell = $one->cell;
+    is($cell->value,        'a', "value is 'a'");
+    is($cell->border_left,  '>', "got left border");
+    is($cell->border_right, '<', "got right border");
+
+    $one = $CLASS->new(exists => 1, defined => 1, value => 'a', meta => 0);
+    $cell = $one->cell;
+    is($cell->value, 'a', "value is 'a'");
+    ok(!$cell->border_left,  "no left border");
+    ok(!$cell->border_right, "no right border");
+
+    $one = $CLASS->new(exists => 1, defined => 1, value => {}, meta => 0);
+    $cell = $one->cell;
+    is($cell->value, 'HASH(...)', "value is 'HASH(...)'");
+    is($cell->border_left,  '>', "got left border");
+    is($cell->border_right, '<', "got right border");
+
+    $cell = $one->cell(show_address => 1);
+    like($cell->value, qr/^HASH\(0x.*\)$/i, "value is 'HASH(0x...)'");
+    is($cell->border_left,  '>', "got left border");
+    is($cell->border_right, '<', "got right border");
+
+};
+
 done_testing;
-
-__END__
-
-sub cell {
-    my $self = shift;
-
-    return Term::Table::Cell->new(
-        value        => 'Exception: ' . $self->{+EXCEPTION},
-        border_left  => '>',
-        border_right => '<',
-    ) if $self->{+EXCEPTION};
-
-    return Term::Table::Cell->new(
-        value        => 'DOES NOT EXIST',
-        border_left  => '>',
-        border_right => '<',
-    ) unless $self->{+EXISTS};
-
-    return Term::Table::Cell->new(
-        value        => 'NOT DEFINED',
-        border_left  => '>',
-        border_right => '<',
-    ) unless $self->{+DEFINED};
-
-    my $value = $self->value;
-
-    return Term::Table::Cell->new(
-        value => "$value",
-        $self->{+META} ? (
-            border_left  => '>',
-            border_right => '<',
-        ) : (),
-    ) unless ref($value);
-
-    return ref_cell($value);
-}
-
-
