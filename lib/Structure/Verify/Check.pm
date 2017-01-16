@@ -15,8 +15,11 @@ sub SHOW_ADDRESS { 0 }
 
 sub not_operator { '!' . $_[0]->operator }
 sub operator     { croak((blessed($_[0]) || $_[0]) . " does not implement operator()") }
-sub verify_type  { croak((blessed($_[0]) || $_[0]) . " does not implement verify_type()") }
-sub verify       { croak((blessed($_[0]) || $_[0]) . " does not implement verify()") }
+
+sub verify_meta    { undef }
+sub verify_simple  { undef }
+sub verify_complex { undef }
+sub subchecks      { () }
 
 sub clone {
     my $self  = shift;

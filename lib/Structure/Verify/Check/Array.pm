@@ -14,7 +14,6 @@ use Term::Table::Cell;
 
 sub not_operator { 'IS NOT' }
 sub operator     { 'IS' }
-sub verify       { undef }
 
 sub build {
     my $self = shift;
@@ -51,7 +50,7 @@ sub pre_build {
     $self->{+COMPONENTS} ||= [];
 }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 

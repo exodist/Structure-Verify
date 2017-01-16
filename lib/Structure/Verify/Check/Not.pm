@@ -48,14 +48,27 @@ sub build {
     croak "'$class' does not know how to build with '$with'";
 }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
-    return $self->{+CHECK}->verify_type(@_);
+    return $self->{+CHECK}->verify_meta(@_);
 }
 
-sub verify {
+sub verify_simple {
     my $self = shift;
-    my $verify = $self->{+CHECK}->verify(@_);
+    my $verify = $self->{+CHECK}->verify_simple(@_);
+    return $verify unless defined $verify;
+    return $verify ? 0 : 1;
+}
+
+sub verify_complex {
+    my $self = shift;
+    my %params = @_;
+
+    my $delta = Structure::Verify::Delta->new();
+    my $verify = $self->{+CHECK}->verify_complex(
+        %params,
+        delta => $delta,
+    );
     return $verify unless defined $verify;
     return $verify ? 0 : 1;
 }
@@ -63,27 +76,12 @@ sub verify {
 sub subchecks {
     my $self = shift;
 
-    return unless $self->{+CHECK}->can('subchecks');
-
     my $class = blessed($self);
     my @subchecks = $self->{+CHECK}->subchecks(@_);
 
     $_->[1] = $class->new(check => $_->[1], lines => [$self->lines]) for @subchecks;
 
     return @subchecks;
-}
-
-sub complex_check {
-    my $self = shift;
-    my %params = @_;
-
-    return 1 unless $self->{+CHECK}->can('complex_check');
-
-    my $delta = Structure::Verify::Delta->new();
-    return !$self->{+CHECK}->complex_check(
-        %params,
-        delta => $delta,
-    );
 }
 
 sub cell {

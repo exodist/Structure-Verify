@@ -15,7 +15,6 @@ my %ALLOW = map { $_ => $_ } @ORDER;
 
 sub operator     { 'IN' }
 sub not_operator { 'NOT IN' }
-sub verify_type  { undef }
 
 sub from_string {
     my $class = shift;
@@ -86,7 +85,7 @@ sub add_subcheck {
     $self->{$thing} = $bool;
 }
 
-sub verify {
+sub verify_simple {
     my $self = shift;
     my ($got) = @_;
 

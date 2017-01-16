@@ -12,9 +12,7 @@ use Structure::Verify::Util::Ref qw/rtype/;
 use Structure::Verify::Got;
 use Term::Table::CellStack;
 
-sub operator    { 'ALL' }
-sub verify_type { undef }
-sub verify      { undef }
+sub operator { 'ALL' }
 
 sub build {
     my $self = shift;
@@ -44,7 +42,7 @@ sub negate {
     return Structure::Verify::Check::None->new(children => [@{$self->children}]);
 }
 
-sub complex_check {
+sub verify_complex {
     my $self   = shift;
     my %params = @_;
 

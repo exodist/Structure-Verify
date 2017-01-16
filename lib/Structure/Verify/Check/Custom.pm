@@ -29,9 +29,7 @@ sub post_build {
         unless rtype($self->{+CODE}) eq 'CODE';
 }
 
-sub verify_type { undef }
-
-sub verify {
+sub verify_simple {
     my $self = shift;
     my ($got) = @_;
     return $self->{+CODE}->($got) ? 1 : 0;

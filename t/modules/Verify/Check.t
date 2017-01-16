@@ -29,11 +29,10 @@ like(
     "No operator"
 );
 
-like(
-    exception { $CLASS->verify },
-    qr/$CLASS does not implement verify\(\)/,
-    "No way to verify"
-);
+is([$CLASS->verify_meta],    [undef], "verify_meta defaults to undef");
+is([$CLASS->verify_simple],  [undef], "verify_simple defaults to undef");
+is([$CLASS->verify_complex], [undef], "verify_complex defaults to undef");
+is([$CLASS->subchecks],      [],      "subchecks defaults to an empty list");
 
 tests simple => sub {
     my $one = $CLASS->new(lines => [1, 2, 3]);

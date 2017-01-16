@@ -21,7 +21,7 @@ sub post_build {
         unless isvstring($self->{+VALUE});
 }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 
@@ -31,7 +31,7 @@ sub verify_type {
     return 1;
 }
 
-sub verify {
+sub verify_Simple {
     my $self = shift;
     my ($got) = @_;
 

@@ -10,7 +10,7 @@ use Scalar::Util qw/looks_like_number/;
 sub not_operator { '!=' }
 sub operator     { '==' }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 
@@ -20,7 +20,7 @@ sub verify_type {
     return 1;
 }
 
-sub verify {
+sub verify_simple {
     my $self = shift;
     my ($got) = @_;
 

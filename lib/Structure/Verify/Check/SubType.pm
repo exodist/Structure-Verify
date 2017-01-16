@@ -11,7 +11,6 @@ use Structure::Verify::Util::Ref qw/render_ref/;
 
 sub not_operator { 'ISNOTA' }
 sub operator     { 'ISA' }
-sub verify       { undef }
 
 sub post_build {
     my $self = shift;
@@ -22,7 +21,7 @@ sub post_build {
         unless $self->{+TYPE};
 }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 

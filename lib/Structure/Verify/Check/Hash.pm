@@ -43,9 +43,7 @@ sub pre_build {
     $self->{+COMPONENTS} ||= [];
 }
 
-sub verify { undef }
-
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 

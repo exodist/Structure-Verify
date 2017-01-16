@@ -20,7 +20,7 @@ sub post_build {
         unless rtype($self->{+VALUE}) eq 'REGEXP';
 }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 
@@ -31,7 +31,7 @@ sub verify_type {
     return 1;
 }
 
-sub verify {
+sub verify_simple {
     my $self = shift;
     my ($got) = @_;
 

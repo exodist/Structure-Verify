@@ -11,9 +11,7 @@ sub not_operator { '' }
 
 sub build { croak "Cannot build a Boundary check" }
 
-sub verify_type { undef }
-
-sub verify {
+sub verify_simple {
     my $self = shift;
     my ($got) = @_;
 

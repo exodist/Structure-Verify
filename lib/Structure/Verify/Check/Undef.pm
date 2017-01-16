@@ -8,7 +8,7 @@ use Structure::Verify::HashBase;
 sub not_operator { 'IS NOT' }
 sub operator     { 'IS' }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 
@@ -16,7 +16,7 @@ sub verify_type {
     return 1;
 }
 
-sub verify {
+sub verify_simple {
     my $self = shift;
     my ($got) = @_;
 

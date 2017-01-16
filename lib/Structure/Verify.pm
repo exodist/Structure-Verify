@@ -2,7 +2,7 @@ package Structure::Verify;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
+use Carp qw/croak confess/;
 use Structure::Verify::Util::Ref qw/rtype/;
 use Sub::Info qw/sub_info/;
 use Scalar::Util qw/blessed/;
@@ -191,37 +191,48 @@ sub run_checks {
         croak(($path ? "$path: " : "") . (defined($check) ? "'$check'" : "<undef>") . " is not a valid check")
             unless $check && $check->isa('Structure::Verify::Check');
 
-        my $type = $check->verify_type($got);
-        if (defined($type) && !$type) {
+        my $meta = $check->verify_meta($got);
+        if (defined($meta) && !$meta) {
             $pass = 0;
             $delta->add($path, $check, $got);
             next;
         }
 
-        my $verify = $check->verify($got);
-        if (defined($verify) && !$verify) {
+        my $simple = $check->verify_simple($got);
+        if (defined($simple) && !$simple) {
             $pass = 0;
             $delta->add($path, $check, $got);
             next;
         }
 
-        if ($check->can('complex_check')) {
-            my $ok = $check->complex_check(
-                path    => $path,
-                got     => $got,
-                delta   => $delta,
-                convert => $convert,
-                state   => $state,
-            );
+        my $complex = $check->verify_complex(
+            path    => $path,
+            got     => $got,
+            delta   => $delta,
+            convert => $convert,
+            state   => $state,
+        );
 
-            unless ($ok) {
-                $pass = 0;
-                next;
-            }
+        if (defined($complex) && !$complex) {
+            $pass = 0;
+            # Delta would have already been added by the complex check
+            next;
         }
 
-        unshift @todo => map { push @{$_} => $state; $_ } $check->subchecks($path, $got)
-            if $check->can('subchecks');
+        my @subchecks = map { push @{$_} => $state; $_ } $check->subchecks($path, $got);
+        unshift @todo => @subchecks if @subchecks;
+
+        next if defined $meta;
+        next if defined $simple;
+        next if defined $complex;
+        next if @subchecks;
+
+        my $file = $check->file;
+        my $lines = join ', ' => $check->lines;
+        confess(<<"        EOT");
+Check '$check' defined in $file line(s) $lines did nothing!
+It did not define any verification states and had no subchecks.
+        EOT
     }
 
     return (1) if $pass;

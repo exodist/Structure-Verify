@@ -16,7 +16,6 @@ use Term::Table::Cell;
 
 sub not_operator { 'IS NOT' }
 sub operator     { 'IS' }
-sub verify       { undef }
 
 sub pre_build {
     my $self = shift;
@@ -34,7 +33,7 @@ sub cell {
     );
 }
 
-sub verify_type {
+sub verify_meta {
     my $self = shift;
     my ($got) = @_;
 
@@ -66,7 +65,7 @@ sub build {
     return $self->SUPER::build(@_);
 }
 
-sub complex_check {
+sub verify_complex {
     my $self   = shift;
     my %params = @_;
 
@@ -127,7 +126,7 @@ sub complex_check {
         $delta->add_space if $count > 1 || $want_count > 1;
     }
 
-    return !$bad unless $self->{+BOUNDED};
+    return $bad ? 0 : 1 unless $self->{+BOUNDED};
 
     for (my $v = 0; $v < @$value; $v++) {
         next if $v_ok->{$v};
@@ -140,7 +139,7 @@ sub complex_check {
         );
     }
 
-    return !$bad;
+    return $bad ? 0 : 1;
 }
 
 sub _render_trace {
