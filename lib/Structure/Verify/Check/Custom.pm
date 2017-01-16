@@ -2,8 +2,7 @@ package Structure::Verify::Check::Custom;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
-
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-code -name -operator/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
@@ -29,6 +28,8 @@ sub post_build {
     croak "The 'code' attribute must be a coderef"
         unless rtype($self->{+CODE}) eq 'CODE';
 }
+
+sub verify_type { undef }
 
 sub verify {
     my $self = shift;

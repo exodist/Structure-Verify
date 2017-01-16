@@ -2,7 +2,7 @@ package Structure::Verify::Check::Any;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-children/;
 
 use Carp qw/croak/;
@@ -13,8 +13,9 @@ use Structure::Verify::Util::Ref qw/rtype ref_cell/;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
-sub operator { 'ANY' }
-sub verify { 1 }
+sub operator    { 'ANY' }
+sub verify_type { undef }
+sub verify      { undef }
 
 sub build {
     my $self = shift;
@@ -36,6 +37,12 @@ sub cell {
         border_left  => '>',
         border_right => '<',
     );
+}
+
+sub negate {
+    my $self = shift;
+    require Structure::Verify::Check::None;
+    return Structure::Verify::Check::None->new(children => [@{$self->children}]);
 }
 
 sub complex_check {

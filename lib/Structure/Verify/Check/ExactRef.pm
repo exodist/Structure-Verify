@@ -2,9 +2,8 @@ package Structure::Verify::Check::ExactRef;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-value/;
-use Structure::Verify::Behaviors::Negatable;
 
 use Carp qw/croak/;
 use Scalar::Util qw/refaddr/;
@@ -12,7 +11,8 @@ use Structure::Verify::Util::Ref qw/rtype/;
 
 sub SHOW_ADDRESS { 1 }
 
-sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
+sub noy_operator { 'IS NOT' }
+sub operator     { 'IS' }
 
 sub post_build {
     my $self = shift;
@@ -33,7 +33,7 @@ sub build {
     return $self->SUPER::build(@_);
 }
 
-sub verify {
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 
@@ -41,6 +41,13 @@ sub verify {
     return 0 unless $got->defined;
     return 0 unless ref($got->value);
     return 0 unless rtype($got->value) eq rtype($self->value);
+    return 1;
+}
+
+sub verify {
+    my $self = shift;
+    my ($got) = @_;
+
     return 0 unless refaddr($got->value) == refaddr($self->value);
     return 1;
 }

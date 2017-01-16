@@ -13,8 +13,10 @@ use Structure::Verify::Meta;
 
 sub SHOW_ADDRESS { 0 }
 
-sub operator { croak((blessed($_[0]) || $_[0]) . " does not implement operator()") }
-sub verify   { croak((blessed($_[0]) || $_[0]) . " does not implement verify()") }
+sub not_operator { '!' . $_[0]->operator }
+sub operator     { croak((blessed($_[0]) || $_[0]) . " does not implement operator()") }
+sub verify_type  { croak((blessed($_[0]) || $_[0]) . " does not implement verify_type()") }
+sub verify       { croak((blessed($_[0]) || $_[0]) . " does not implement verify()") }
 
 sub clone {
     my $self  = shift;
@@ -50,6 +52,12 @@ sub pre_build {
 sub post_build {
     my $self = shift;
     $self->{+BUILDING} = 0;
+}
+
+sub negate {
+    my $self = shift;
+    require Structure::Verify::Check::Not;
+    return Structure::Verify::Check::Not->new(check => $self);
 }
 
 sub build {

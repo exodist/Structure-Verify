@@ -3,13 +3,15 @@ use strict;
 use warnings;
 
 use Carp qw/croak/;
-use parent 'Structure::Verify::Check';
-use Structure::Verify::HashBase;
+use Structure::Verify::CheckMaker;
 use Term::Table::Cell;
 
-sub operator { '' }
+sub operator     { '' }
+sub not_operator { '' }
 
 sub build { croak "Cannot build a Boundary check" }
+
+sub verify_type { undef }
 
 sub verify {
     my $self = shift;

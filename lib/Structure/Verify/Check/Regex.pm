@@ -2,14 +2,14 @@ package Structure::Verify::Check::Regex;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-value/;
-use Structure::Verify::Behaviors::Negatable;
 
 use Carp qw/croak/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
-sub operator { $_[0]->negate ? 'IS NOT' : 'IS' }
+sub not_operator { 'IS NOT' }
+sub operator     { 'IS' }
 
 sub post_build {
     my $self = shift;
@@ -20,21 +20,25 @@ sub post_build {
         unless rtype($self->{+VALUE}) eq 'REGEXP';
 }
 
-sub verify {
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 
     return 0 unless $got->exists;
     return 0 unless $got->defined;
 
+    return 0 unless rtype($got->value) eq 'REGEXP';
+    return 1;
+}
+
+sub verify {
+    my $self = shift;
+    my ($got) = @_;
+
     my $got_val  = $got->value;
     my $want_val = $self->value;
 
-    return 0 unless rtype($got->value) eq 'REGEXP';
-
-    my ($pass, $fail) = $self->negate ? (0, 1) : (1, 0);
-    return $fail unless "$got_val" eq "$want_val";
-    return $pass;
+    return "$got_val" eq "$want_val" ? 1 : 0;
 }
 
 1;

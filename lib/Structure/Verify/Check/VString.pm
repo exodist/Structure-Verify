@@ -2,15 +2,15 @@ package Structure::Verify::Check::VString;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-value/;
-use Structure::Verify::Behaviors::Negatable;
 
 use Carp qw/croak/;
 use Scalar::Util qw/isvstring/;
 use Structure::Verify::Util::Ref qw/rtype/;
 
-sub operator { $_[0]->negate ? 'ne' : 'eq' }
+sub not_operator { 'ne' }
+sub operator     { 'eq' }
 
 sub post_build {
     my $self = shift;
@@ -21,16 +21,21 @@ sub post_build {
         unless isvstring($self->{+VALUE});
 }
 
-sub verify {
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 
     return 0 unless $got->exists;
     return 0 unless $got->defined;
     return 0 unless isvstring($got->value);
+    return 1;
+}
 
-    my ($pass, $fail) = $self->negate ? (0, 1) : (1, 0);
-    return $got->value eq $self->value ? $pass : $fail;
+sub verify {
+    my $self = shift;
+    my ($got) = @_;
+
+    return $got->value eq $self->value ? 1 : 0;
 }
 
 sub build {

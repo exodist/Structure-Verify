@@ -2,8 +2,7 @@ package Structure::Verify::Check::Object;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
-
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-methods -type -subtypes/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
@@ -14,7 +13,9 @@ use Structure::Verify::Check::SubType;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
-sub operator { 'BLESSED' }
+sub not_operator { 'BLESSED' }
+sub operator     { 'BLESSED' }
+sub verify       { undef }
 
 sub cell {
     my $self = shift;
@@ -47,7 +48,7 @@ sub pre_build {
     $self->{+SUBTYPES} ||= [];
 }
 
-sub verify {
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 

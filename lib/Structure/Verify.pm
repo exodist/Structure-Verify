@@ -191,7 +191,15 @@ sub run_checks {
         croak(($path ? "$path: " : "") . (defined($check) ? "'$check'" : "<undef>") . " is not a valid check")
             unless $check && $check->isa('Structure::Verify::Check');
 
-        unless ($check->verify($got)) {
+        my $type = $check->verify_type($got);
+        if (defined($type) && !$type) {
+            $pass = 0;
+            $delta->add($path, $check, $got);
+            next;
+        }
+
+        my $verify = $check->verify($got);
+        if (defined($verify) && !$verify) {
             $pass = 0;
             $delta->add($path, $check, $got);
             next;

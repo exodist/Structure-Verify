@@ -2,8 +2,7 @@ package Structure::Verify::Check::Hash;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
-
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-components bounded/;
 
 use Carp qw/croak/;
@@ -13,7 +12,8 @@ use Structure::Verify::Got;
 use Structure::Verify::Check::Boundary;
 use Term::Table::Cell;
 
-sub operator { 'IS' }
+sub operator     { 'IS' }
+sub not_operator { 'IS NOT' }
 
 sub cell {
     return Term::Table::Cell->new(
@@ -43,7 +43,9 @@ sub pre_build {
     $self->{+COMPONENTS} ||= [];
 }
 
-sub verify {
+sub verify { undef }
+
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 

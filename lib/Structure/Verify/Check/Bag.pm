@@ -2,8 +2,7 @@ package Structure::Verify::Check::Bag;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
-
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-components bounded/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
@@ -15,7 +14,9 @@ use Structure::Verify::Check::Boundary;
 use Structure::Verify::Got;
 use Term::Table::Cell;
 
-sub operator { 'IS' }
+sub not_operator { 'IS NOT' }
+sub operator     { 'IS' }
+sub verify       { undef }
 
 sub pre_build {
     my $self = shift;
@@ -33,7 +34,7 @@ sub cell {
     );
 }
 
-sub verify {
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 

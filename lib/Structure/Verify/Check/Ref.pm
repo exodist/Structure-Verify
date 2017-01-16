@@ -2,8 +2,7 @@ package Structure::Verify::Check::Ref;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
-
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-type -subcheck/;
 
 use Structure::Verify::Util::Ref qw/rtype/;
@@ -17,7 +16,9 @@ my %SUBCHECK = (
     REF    => 1,
 );
 
-sub operator { 'IS' }
+sub not_operator { 'IS NOT' }
+sub operator     { 'IS' }
+sub verify       { undef }
 
 sub cell {
     return Term::Table::Cell->new(
@@ -57,7 +58,7 @@ sub post_build {
         if $self->{+SUBCHECK} && $type ne 'subcheck';
 }
 
-sub verify {
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 

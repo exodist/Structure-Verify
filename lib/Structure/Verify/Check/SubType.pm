@@ -2,15 +2,16 @@ package Structure::Verify::Check::SubType;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
-
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-type/;
 
 use Carp qw/croak/;
 use Scalar::Util qw/blessed/;
 use Structure::Verify::Util::Ref qw/render_ref/;
 
-sub operator { 'ISA' }
+sub not_operator { 'ISNOTA' }
+sub operator     { 'ISA' }
+sub verify       { undef }
 
 sub post_build {
     my $self = shift;
@@ -21,7 +22,7 @@ sub post_build {
         unless $self->{+TYPE};
 }
 
-sub verify {
+sub verify_type {
     my $self = shift;
     my ($got) = @_;
 

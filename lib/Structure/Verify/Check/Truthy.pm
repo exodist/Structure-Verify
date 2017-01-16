@@ -2,7 +2,7 @@ package Structure::Verify::Check::Truthy;
 use strict;
 use warnings;
 
-use parent 'Structure::Verify::Check';
+use Structure::Verify::CheckMaker;
 use Structure::Verify::HashBase qw/-true -false -defined -undefined -exists -non_existant/;
 
 use Carp qw/croak/;
@@ -13,7 +13,9 @@ use Term::Table::Cell;
 my @ORDER = ( +TRUE, +FALSE, +DEFINED, +UNDEFINED, +EXISTS, +NON_EXISTANT );
 my %ALLOW = map { $_ => $_ } @ORDER;
 
-sub operator { 'IN' }
+sub operator     { 'IN' }
+sub not_operator { 'NOT IN' }
+sub verify_type  { undef }
 
 sub from_string {
     my $class = shift;
