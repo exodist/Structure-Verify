@@ -101,8 +101,8 @@ sub add_subcheck {
     if (@_) {
         my $in = shift;
 
-        my $int = int($in);
-        croak "Index must be an integer, '$idx' does not look like an integer as conversion yields '$int'"
+        my $int = do { no warnings 'numeric'; int($in) };
+        croak "Index must be an integer, '$in' does not look like an integer as conversion yields '$int'"
             if "$in" ne "$int";
 
         $idx = $int;
@@ -111,7 +111,7 @@ sub add_subcheck {
         $idx = $self->{+IDX};
     }
 
-    $self->{+IDX} = $idx + 1;
+    $self->{+IDX} = max($idx + 1, $self->{+IDX});
     push @{$self->{+COMPONENTS}} => [$idx, $check];
 }
 
